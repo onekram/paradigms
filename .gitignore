@@ -9,3 +9,36 @@ _*
 
 # Store .git files
 !.git*
+
+*.jar
+paradigms.iml
+
+/java-solutions/base/
+/java-solutions/markup/MarkupListTest.java
+/java-solutions/markup/MarkupTester.java
+/java-solutions/markup/MarkupTest.java
+
+*.txt
+/java-solutions/expression/common/
+/java-solutions/expression/BigIntegerExpression.java
+/java-solutions/expression/Expression.java
+/java-solutions/expression/ExpressionTester.java
+/java-solutions/expression/ExpressionTest.java
+
+
+/java-solutions/expression/ToMiniString.java
+/java-solutions/expression/TripleExpression.java
+/java-solutions/expression/parser/Operations.java
+/java-solutions/expression/parser/ParserTest.java
+/java-solutions/expression/parser/ParserTester.java
+/java-solutions/expression/parser/ParserTestSet.java
+/java-solutions/expression/parser/TripleParser.java
+/java-solutions/expression/parser/package-info.java
+
+/java-solutions/markup/package-info.java
+/java-solutions/expression/exceptions/ExceptionsTest.java
+/java-solutions/expression/exceptions/ExceptionsTester.java
+/java-solutions/expression/exceptions/package-info.java
+/java-solutions/expression/exceptions/TripleParser.java
+/java-solutions/expression/exceptions/ExceptionsTestSet.java
+/java-solutions/expression/package-info.java

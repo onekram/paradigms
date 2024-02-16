@@ -1,0 +1,33 @@
+package expression;
+
+import java.math.BigInteger;
+
+public class Min extends BinaryOperation {
+
+    public Min(MyExpression expressionL, MyExpression expressionR) {
+        super(expressionL, expressionR);
+    }
+
+    @Override
+    protected int evaluateOperation(int valueL, int valueR) {
+        return Math.min(valueL, valueR);
+    }
+
+    @Override
+    protected BigInteger evaluateOperation(BigInteger valueL, BigInteger valueR) {
+        return valueL.min(valueR);
+    }
+
+    @Override
+    protected String getSign() {
+        return "min";
+    }
+    @Override
+    public Priority getPriority() {
+        return Priority.LOW;
+    }
+    @Override
+    protected boolean canOpen(MyExpression expression) {
+        return !(expression instanceof Max);
+    }
+}
