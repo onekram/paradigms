@@ -11,7 +11,6 @@ public class HighOnes extends UnaryOperation {
     protected int evaluateOperation(int value) {
         long mask = 1;
         int count = 0;
-        // :NOTE: long
         while (Integer.MAX_VALUE * 2L >= mask) {
             count++;
             if ((value & mask) == 0) {

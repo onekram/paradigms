@@ -7,8 +7,6 @@ public class TokenParser {
 
     private Operand currentElement;
     private final String expression;
-
-    // :NOTE: HashSet in declaration
     private final HashSet<Character> operations = new HashSet<>(Set.of('+', '*', '/', '&', '^', '|', '(', ')', '[', ']', '{', '}'));
     private final HashSet<Character> openBrackets = new HashSet<>(Set.of('(', '[', '{'));
     private final HashSet<Character> unaryOperations = new HashSet<>(Set.of('-', 'l', 't'));

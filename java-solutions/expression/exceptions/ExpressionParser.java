@@ -18,8 +18,7 @@ public class ExpressionParser extends expression.parser.ExpressionParser {
             case L_SHIFT -> new LShift(first, second);
             case R_SHIFT -> new RShift(first, second);
             case A_SHIFT -> new AShift(first, second);
-            // :NOTE: IllegalArgumentException?
-            default -> throw new IllegalArgumentException(String.format("No action expected for %s", operand));
+            default -> throw new RuntimeException(String.format("No action expected for %s", operand));
         };
     }
 

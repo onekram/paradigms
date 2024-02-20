@@ -11,7 +11,6 @@ public class LowOnes extends UnaryOperation {
     protected int evaluateOperation(int value) {
         long mask = 1;
         int count = 0;
-        // :NOTE: long
         while (Integer.MAX_VALUE * 2L >= mask && (value & mask) != 0) {
             count++;
             mask <<= 1;

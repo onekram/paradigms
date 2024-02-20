@@ -1,6 +1,5 @@
 package expression;
 
-// :NOTE: non-extensible
 public enum Priority {
     NP(0),
     HIGH(1),

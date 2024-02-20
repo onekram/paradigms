@@ -66,8 +66,6 @@ public abstract class BinaryOperation implements MyExpression {
                 append(formatExpression(expressionR, needFormat(expressionR, true))).toString();
     }
 
-    // :NOTE: square
-
     private static StringBuilder formatExpression(MyExpression expression, boolean needBrackets) {
         String minString = expression.toMiniString();
         StringBuilder sb = new StringBuilder();
