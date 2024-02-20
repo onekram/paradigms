@@ -204,13 +204,17 @@ public class BinarySearchShift {
     // Pred: args[0] - x,
     // ∃ el: ∀ x1, x2: x1 < x2 < bound: array[x1] < array[x2]
     //       ∀ x1, x2: bound < x1 < x2: array[x1] < array[x2] < array[bound - 1]
+
+    // Pred: args[0] - x, ∀ i,j 1 < i < j < args.length: args[i] < args[j]
     public static void main(String[] args) {
         int x = Integer.parseInt(args[0]);
         int[] array = new int[args.length - 1];
         for (int i = 0; i < args.length - 1; i++) {
             array[i] = Integer.parseInt(args[1 + i]);
         }
+        // Pred
         System.out.println(findElementIterative(x, array));
+        // Post: R: array[R] = x |-1 if ∄ i: l < i < r: array[i] = x
 //        System.out.println(findElementRec(x, array));
     }
 }
