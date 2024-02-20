@@ -18,15 +18,20 @@ public class BinarySearch {
                 // Pred ^ Inv ^ (l + r) / 2 < r - 1 ∧ array[mid] > x
                 l = mid;
                 // Pred ^ Inv ^ l < r - 1
+                // r - mid = r - (l + r) / 2 = (r - l) / 2 - new length
+
             } else {
                 // Pred ^ Inv ^ l < r - 1 ∧ array[mid] <= x
                 // Pred ^ Inv ^ l < l / 2 + r / 2 - 1 ∧ array[mid] <= x
                 // Pred ^ Inv ^ l < (l + r) / 2 - 1 ∧ array[mid] <= x
                 r = mid;
                 // Pred ^ Inv ^ l < r - 1
+                // mid - l = (l + r) / 2 - l = (r - l) / 2 - new length
             }
+            // length_i = length_i-1 / 2
             // Inv ^ l < r - 1
         }
+        // length_i = length_0 / 2^i => 0(i) = O(log(length_0)
         // Inv ^ l = r - 1
         return r;
     }
@@ -37,6 +42,7 @@ public class BinarySearch {
         // Pred
         if (l == r - 1) {
             // Pred ^ l = r - 1 -> R
+            // length_i = length_0 / 2^i => 0(i) = O(log(length_0)
             return r;
             // Post
         }
@@ -45,14 +51,18 @@ public class BinarySearch {
         if (array[mid] > x) {
             // Pred ^ l != r - 1 ^ array[mid] > x
             // Pred ^ l != r - 1 ^ array[mid] > x -> x ∈ array(mid:r]
+            // r - mid = r - (l + r) / 2 = (r - l) / 2 - new length
             return binarySearchRec(x, array, mid, r);
             // Post
         } else {
             // Pred ^ l != r - 1 ^ array[mid] <=  x
             // Pred ^ l != r - 1 ^ array[mid] < x -> x ∈ array[l:mid]
+            // mid - l = (l + r) / 2 - l = (r - l) / 2 - new length
             return binarySearchRec(x, array, l, mid);
             // Post
         }
+        // length_i = length_i-1 / 2
+
     }
     // Post: R: array[R] <= x ^ ∀ a < R: array[a] > x
 
