@@ -32,7 +32,7 @@ public class BinarySearch {
     }
     // Post: R: array[R] <= x ^ ∀ a < R: array[a] > x
 
-    // Pred: ∀ x1,x2 x1 < x2: array[x1] >= array[x2]
+    // Pred: ∀ x1,x2  l < x1 < x2 < r: array[x1] >= array[x2]
     public static int binarySearchRec(int x, int[] array, int l, int r) {
         // Pred
         if (l == r - 1) {

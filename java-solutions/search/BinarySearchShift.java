@@ -148,8 +148,8 @@ public class BinarySearchShift {
     // Post: R: array[R] = x |-1 if ∄ el: array[el] = x
 
     // Pred:
-    // ∃ bound: ∀ x1, x2: x1 < x2 < bound: array[x1] < array[x2]
-    //       ∀ x1, x2: bound < x1 < x2: array[x1] < array[x2] < array[bound - 1]
+    // ∃ bound: ∀ x1, x2: l < x1 < x2 < bound < r: array[x1] < array[x2]
+    //       ∀ x1, x2: l < bound < x1 < x2 < r: array[x1] < array[x2] < array[bound - 1]
     // bound - index for sorted(array)[n - 1]
     public static int findBoundRec(int[] array, int l, int r) {
         // Pred
