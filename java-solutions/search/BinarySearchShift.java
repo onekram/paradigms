@@ -202,10 +202,9 @@ public class BinarySearchShift {
     // Post: R: array[R] = x |-1 if ∄ i: l < i < r: array[i] = x
 
     // Pred: args[0] - x,
-    // ∃ el: ∀ x1, x2: x1 < x2 < bound: array[x1] < array[x2]
-    //       ∀ x1, x2: bound < x1 < x2: array[x1] < array[x2] < array[bound - 1]
+    // ∃ el: ∀ x1, x2: 1 < x1 < x2 < bound < args.length - 1: args[x1] < args[x2]
+    //       ∀ x1, x2: bound < x1 < x2 < : args[x1] < args[x2] < args[bound - 1]
 
-    // Pred: args[0] - x, ∀ i,j 1 < i < j < args.length: args[i] < args[j]
     public static void main(String[] args) {
         int x = Integer.parseInt(args[0]);
         int[] array = new int[args.length - 1];

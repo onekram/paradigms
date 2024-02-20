@@ -5,7 +5,7 @@ import java.util.Arrays;
 public class BinarySearch {
 
     // ] length = 2n or 2n+1
-    // every iteration make 2n or 2n+1 to n
+    // every iteration make 2n or 2n+1 to n,
     // n is 2k or 2k+1 also
     // so to make length = 1 we can go from 2 or 3
     // so this tree contains all numbers
