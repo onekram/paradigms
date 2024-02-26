@@ -44,3 +44,10 @@ paradigms.iml
 /java-solutions/expression/package-info.java
 
 /java-solutions/search/BinarySearchTest.java
+
+/java-solutions/queue/*Test.java
+!/java-solutions/queue/*MyTest.java
+
+/java-solutions/queue/*Tester.java
+/java-solutions/queue/Queues.java
+
