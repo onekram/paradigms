@@ -77,6 +77,7 @@ public class ArrayQueueADT {
     public static Object remove(ArrayQueueADT queue) {
         assert !isEmpty(queue);
 
+        // :NOTE: copy-paste
         int currentTail = (queue.head + queue.size - 1) % queue.elements.length;
         Object element = queue.elements[currentTail];
         queue.elements[currentTail] = null;
