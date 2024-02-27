@@ -1,6 +1,8 @@
 package queue;
 
 
+import java.util.function.Function;
+
 // Model: a[1..n]
 // Inv: n >= 0 && for i=1..n: a[i] != null
 // Let: immutable(k): for i=1..k: a'[i] = a[i]
@@ -29,7 +31,7 @@ public abstract class AbstractQueue implements Queue {
         assert element != null;
 
         enqueueImpl(element);
-        ++size;
+        size++;
     }
 
     // Pre: true
@@ -42,7 +44,7 @@ public abstract class AbstractQueue implements Queue {
     public Object dequeue() {
         assert !isEmpty();
 
-        --size;
+        size--;
         return dequeueImpl();
     }
 
@@ -73,4 +75,11 @@ public abstract class AbstractQueue implements Queue {
     // Pre: true
     // Post: n = n'
     protected abstract void clearImpl();
+
+    @Override
+    public Queue flatMap(Function<Object, Object> function) {
+        return flatMapImpl(function);
+    }
+
+    protected abstract Queue flatMapImpl(Function<Object, Object> function);
 }

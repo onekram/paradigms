@@ -7,6 +7,8 @@ package queue;
 // Let: immutable_pre(k): for i=1..k: a'[i + 1] = a[i]
 // Let: immutable_post(k): for i=1..k: a'[i] = a[i + 1]
 
+import java.util.function.Function;
+
 public class LinkedQueue extends AbstractQueue {
     private Node head;
     private Node tail;
@@ -45,6 +47,18 @@ public class LinkedQueue extends AbstractQueue {
     public void clearImpl() {
         head = null;
         tail = null;
+    }
+
+    @Override
+    protected Queue flatMapImpl(Function<Object, Object> function) {
+        Node currentNode = head;
+        int j = 0;
+        Queue queue = new LinkedQueue();
+        while (j < size) {
+            queue.enqueue(function.apply(currentNode.value));
+            ++j;
+        }
+        return queue;
     }
 
     private static class Node {

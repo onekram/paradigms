@@ -13,13 +13,11 @@ import java.util.function.Predicate;
 public class ArrayQueueModule {
     private static Object[] elements;
     private static int head;
-    private static int tail;
     private static int size;
 
     static {
         elements = new Object[2];
         head = 0;
-        tail = 0;
         size = 0;
     }
 
@@ -31,23 +29,24 @@ public class ArrayQueueModule {
         assert element != null;
 
         ensureCapacity();
-        elements[tail] = element;
-        tail = (tail + 1) % elements.length;
-        ++size;
+        int currentTail = (head + size) % elements.length;
+
+        elements[currentTail] = element;
+        size++;
     }
 
     // Pre: true
     // Post: n' = n, immutable(n)
     private static void ensureCapacity() {
         if (size == elements.length) {
+            int currentTail = (head + size) % elements.length;
             Object[] newElements = new Object[elements.length * 2];
-            if (head < tail) {
-                System.arraycopy(elements, head, newElements, 0, tail - head);
+            if (head < currentTail) {
+                System.arraycopy(elements, head, newElements, 0, currentTail - head);
             } else {
                 System.arraycopy(elements, head, newElements, 0, elements.length - head);
-                System.arraycopy(elements, 0, newElements, elements.length - head, tail);
+                System.arraycopy(elements, 0, newElements, elements.length - head, currentTail);
             }
-            tail = size;
             head = 0;
             elements = newElements;
         }
@@ -63,14 +62,14 @@ public class ArrayQueueModule {
         ensureCapacity();
         head = (elements.length + head - 1) % elements.length;
         elements[head] = element;
-        ++size;
+        size++;
     }
 
     // Pre: n > 0
     // Post: R = a[1], n' = n && immutable(n')
     public static Object peek() {
         assert !isEmpty();
-        return elements[(elements.length + tail - 1) % elements.length];
+        return elements[(size + head - 1) % elements.length];
     }
 
     // Pre: n > 0
@@ -78,14 +77,15 @@ public class ArrayQueueModule {
     public static Object remove() {
         assert !isEmpty();
 
-        tail = (elements.length + tail - 1) % elements.length;
-        Object element = elements[tail];
-        elements[tail] = null;
-        --size;
+        int currentTail = (head + size - 1) % elements.length;
+        Object element = elements[currentTail];
+        elements[currentTail] = null;
+        size--;
         return element;
     }
 
     // Pre: true
+    // el = min(A) then ∀x in A x >= el
     // Post: R: R = i: i = min({el: condition(a[el]) == true}) if exists i: condition(a[i]) == true, R = -1 otherwise
     public static int indexIf(Predicate<Object> condition) {
         for (int i = head, j = 0; j < size; i = (i + 1) % elements.length, j++) {
@@ -97,6 +97,7 @@ public class ArrayQueueModule {
     }
 
     // Pre: true
+    // el = max(A) then ∀x in A x <= el
     // Post: R: R = i: i = max({el: condition(a[el]) == true}) if exists i: condition(a[i]) == true, R = -1 otherwise
     public static int lastIndexIf(Predicate<Object> condition) {
         int lastIndex = -1;
@@ -124,7 +125,7 @@ public class ArrayQueueModule {
         Object element = elements[head];
         elements[head] = null;
         head = (head + 1) % elements.length;
-        --size;
+        size--;
         return element;
     }
 
@@ -147,7 +148,6 @@ public class ArrayQueueModule {
     public static void clear() {
         Arrays.fill(elements, null);
         head = 0;
-        tail = 0;
         size = 0;
     }
 }

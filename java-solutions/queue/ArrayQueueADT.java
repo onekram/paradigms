@@ -13,7 +13,6 @@ public class ArrayQueueADT {
     private Object[] elements = new Object[2];
     // :NOTE: 3 vars
     private int head;
-    private int tail;
     private int size;
 
     // Pre: true
@@ -28,10 +27,13 @@ public class ArrayQueueADT {
     //       a'[n'] = element &&
     //       immutable(n)
     public static void enqueue(ArrayQueueADT queue, Object element) {
+        assert element != null;
+
         ensureCapacity(queue);
 
-        queue.elements[queue.tail] = element;
-        queue.tail = (queue.tail + 1) % queue.elements.length;
+        int currentTail = (queue.size + queue.head) % queue.elements.length;
+
+        queue.elements[currentTail] = element;
         ++queue.size;
     }
 
@@ -39,14 +41,14 @@ public class ArrayQueueADT {
     // Post: n' = n, immutable(n)
     private static void ensureCapacity(ArrayQueueADT queue) {
         if (queue.size == queue.elements.length) {
+            int currentTail = (queue.size + queue.head) % queue.elements.length;
             Object[] newElements = new Object[queue.elements.length * 2];
-            if (queue.head < queue.tail) {
-                System.arraycopy(queue.elements, queue.head, newElements, 0, queue.tail - queue.head);
+            if (queue.head < currentTail) {
+                System.arraycopy(queue.elements, queue.head, newElements, 0, currentTail - queue.head);
             } else {
                 System.arraycopy(queue.elements, queue.head, newElements, 0, queue.elements.length - queue.head);
-                System.arraycopy(queue.elements, 0, newElements, queue.elements.length - queue.head, queue.tail);
+                System.arraycopy(queue.elements, 0, newElements, queue.elements.length - queue.head, currentTail);
             }
-            queue.tail = queue.size;
             queue.head = 0;
             queue.elements = newElements;
         }
@@ -67,7 +69,7 @@ public class ArrayQueueADT {
     // Post: R = a[1], n' = n && immutable(n')
     public static Object peek(ArrayQueueADT queue) {
         assert !isEmpty(queue);
-        return queue.elements[(queue.elements.length + queue.tail - 1) % queue.elements.length];
+        return queue.elements[(queue.head + queue.size - 1) % queue.elements.length];
     }
 
     // Pre: n > 0
@@ -75,18 +77,18 @@ public class ArrayQueueADT {
     public static Object remove(ArrayQueueADT queue) {
         assert !isEmpty(queue);
 
-        queue.tail = (queue.elements.length + queue.tail - 1) % queue.elements.length;
-        Object element = queue.elements[queue.tail];
-        queue.elements[queue.tail] = null;
-        --queue.size;
+        int currentTail = (queue.head + queue.size - 1) % queue.elements.length;
+        Object element = queue.elements[currentTail];
+        queue.elements[currentTail] = null;
+        queue.size--;
         return element;
     }
 
     // Pre: true
     // :NOTE: informal
+    // el = min(A) then ∀x in A x >= el
     // Post: R: R = i: i = min({el: condition(a[el]) == true}) if exists i: condition(a[i]) == true, R = -1 otherwise
     public static int indexIf(ArrayQueueADT queue, Predicate<Object> condition) {
-        // :NOTE: performance
         for (int i = queue.head, j = 0; j < queue.size; i = (i + 1) % queue.elements.length, j++) {
             if (condition.test(queue.elements[i])) {
                 return j;
@@ -96,6 +98,7 @@ public class ArrayQueueADT {
     }
 
     // Pre: true
+    // el = max(A) then ∀x in A x <= el
     // Post: R: R = i: i = max({el: condition(a[el]) == true}) if exists i: condition(a[i]) == true, R = -1 otherwise
     public static int lastIndexIf(ArrayQueueADT queue, Predicate<Object> condition) {
         int lastIndex = -1;
@@ -123,7 +126,7 @@ public class ArrayQueueADT {
         Object element = queue.elements[queue.head];
         queue.elements[queue.head] = null;
         queue.head = (queue.head + 1) % queue.elements.length;
-        --queue.size;
+        queue.size--;
         return element;
     }
 
@@ -144,7 +147,6 @@ public class ArrayQueueADT {
     public static void clear(ArrayQueueADT queue) {
         Arrays.fill(queue.elements, null);
         queue.head = 0;
-        queue.tail = 0;
         queue.size = 0;
     }
 }

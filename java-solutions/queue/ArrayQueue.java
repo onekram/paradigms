@@ -2,6 +2,7 @@ package queue;
 
 
 import java.util.Arrays;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 // Model: a[1..n]
@@ -79,6 +80,7 @@ public class ArrayQueue extends AbstractQueue {
     }
 
     // Pre: true
+    // el = min(A) then ∀x in A x >= el
     // Post: R: R = i: i = min({el: condition(a[el]) == true}) if exists i: condition(a[i]) == true, R = -1 otherwise
     public int indexIf(Predicate<Object> condition) {
         for (int i = head, j = 0; j < size; i = (i + 1) % elements.length, j++) {
@@ -90,6 +92,7 @@ public class ArrayQueue extends AbstractQueue {
     }
 
     // Pre: true
+    // el = max(A) then ∀x in A x <= el
     // Post: R: R = i: i = max({el: condition(a[el]) == true}) if exists i: condition(a[i]) == true, R = -1 otherwise
     public int lastIndexIf(Predicate<Object> condition) {
         int lastIndex = -1;
@@ -117,5 +120,14 @@ public class ArrayQueue extends AbstractQueue {
     public void clearImpl() {
         Arrays.fill(elements, null);
         head = 0;
+    }
+
+    @Override
+    protected Queue flatMapImpl(Function<Object, Object> function) {
+        Queue queue = new ArrayQueue();
+        for (int i = head, j = 0; j < size; i = (i + 1) % elements.length, j++) {
+            queue.enqueue(function.apply(elements[i]));
+        }
+        return queue;
     }
 }

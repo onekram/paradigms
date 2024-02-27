@@ -1,5 +1,7 @@
 package queue;
 
+import java.util.function.Function;
+
 // Model: a[1..n]
 // Inv: n >= 0 && for i=1..n: a[i] != null
 // Let: immutable(k): for i=1..k: a'[i] = a[i]
@@ -31,4 +33,6 @@ public interface Queue {
     // Pre: true
     // Post: n' = 0
     void clear();
+
+    Queue flatMap(Function<Object, Object> function);
 }
