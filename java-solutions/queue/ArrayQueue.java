@@ -13,36 +13,33 @@ import java.util.function.Predicate;
 public class ArrayQueue extends AbstractQueue {
     private Object[] elements;
     private int head;
-    private int tail;
 
     // Pre: true
     // Post: R.n = 0
     public ArrayQueue() {
         elements = new Object[2];
         head = 0;
-        tail = 0;
     }
 
     @Override
     protected void enqueueImpl(Object element) {
         ensureCapacity();
-
-        elements[tail] = element;
-        tail = (tail + 1) % elements.length;
+        int currentTail = (head + size) % elements.length;
+        elements[currentTail] = element;
     }
 
     // Pre: true
     // Post: n' = n, immutable(n)
     private void ensureCapacity() {
         if (size == elements.length) {
+            int currentTail = (head + size) % elements.length;
             Object[] newElements = new Object[elements.length * 2];
-            if (head < tail) {
-                System.arraycopy(elements, head, newElements, 0, tail - head);
+            if (head < currentTail) {
+                System.arraycopy(elements, head, newElements, 0, currentTail - head);
             } else {
                 System.arraycopy(elements, head, newElements, 0, elements.length - head);
-                System.arraycopy(elements, 0, newElements, elements.length - head, tail);
+                System.arraycopy(elements, 0, newElements, elements.length - head, currentTail);
             }
-            tail = size;
             head = 0;
             elements = newElements;
         }
@@ -66,7 +63,8 @@ public class ArrayQueue extends AbstractQueue {
     public Object peek() {
         assert !isEmpty();
 
-        return elements[(elements.length + tail - 1) % elements.length];
+        int currentTail = (head + size) % elements.length;
+        return elements[(elements.length + currentTail - 1) % elements.length];
     }
 
     // Pre: n > 0
@@ -74,9 +72,10 @@ public class ArrayQueue extends AbstractQueue {
     public Object remove() {
         assert !isEmpty();
 
-        tail = (elements.length + tail - 1) % elements.length;
-        Object element = elements[tail];
-        elements[tail] = null;
+        int currentTail = (head + size) % elements.length;
+        currentTail = (elements.length + currentTail - 1) % elements.length;
+        Object element = elements[currentTail];
+        elements[currentTail] = null;
         --size;
         return element;
     }
@@ -120,6 +119,5 @@ public class ArrayQueue extends AbstractQueue {
     public void clearImpl() {
         Arrays.fill(elements, null);
         head = 0;
-        tail = 0;
     }
 }
