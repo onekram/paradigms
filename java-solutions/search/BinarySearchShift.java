@@ -1,7 +1,5 @@
 package search;
 
-import java.util.Arrays;
-
 public class BinarySearchShift {
     // Pred:
     // ∃ bound: ∀ x1, x2: x1 < x2 < bound: array[x1] < array[x2]

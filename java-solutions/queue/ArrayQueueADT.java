@@ -11,6 +11,7 @@ import java.util.function.Predicate;
 // Let: immutable_post(k): for i=1..k: a'[i] = a[i + 1]
 public class ArrayQueueADT {
     private Object[] elements = new Object[2];
+    // :NOTE: 3 vars
     private int head;
     private int tail;
     private int size;
@@ -20,6 +21,8 @@ public class ArrayQueueADT {
     public static ArrayQueueADT create() {
         return new ArrayQueueADT();
     }
+
+    // :NOTE: enqueue(null, "hello")
     // Pre: element != null
     // Post: n' = n + 1 &&
     //       a'[n'] = element &&
@@ -57,7 +60,7 @@ public class ArrayQueueADT {
         ensureCapacity(queue);
         queue.head = (queue.elements.length + queue.head - 1) % queue.elements.length;
         queue.elements[queue.head] = element;
-        ++queue.size;
+        queue.size++;
     }
 
     // Pre: n > 0
@@ -80,8 +83,10 @@ public class ArrayQueueADT {
     }
 
     // Pre: true
+    // :NOTE: informal
     // Post: R: R = i: i = min({el: condition(a[el]) == true}) if exists i: condition(a[i]) == true, R = -1 otherwise
     public static int indexIf(ArrayQueueADT queue, Predicate<Object> condition) {
+        // :NOTE: performance
         for (int i = queue.head, j = 0; j < queue.size; i = (i + 1) % queue.elements.length, j++) {
             if (condition.test(queue.elements[i])) {
                 return j;
