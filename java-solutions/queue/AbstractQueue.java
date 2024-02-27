@@ -1,6 +1,9 @@
 package queue;
 
 
+import java.util.Iterator;
+import java.util.List;
+import java.util.function.BinaryOperator;
 import java.util.function.Function;
 
 // Model: a[1..n]
@@ -76,10 +79,45 @@ public abstract class AbstractQueue implements Queue {
     // Post: n = n'
     protected abstract void clearImpl();
 
+    // Pre: true
+    // Post: true
+    public abstract Iterator<Object> iterator();
+
+    // Pre: true
+    // Post: true
+    protected abstract Queue getInstance();
+
+    // Pre: function != null
+    // function: Object -> List<Object>; ∀ i: 1 < i < n: function(a[i]) = Fi[1..Ki]
+    // Post: R = r[1...K1...K1+K2...∑(i = 1 to n)Ki]
+    // where ∀ index: ∑(i = 1 to p-1)Ki < index <= ∑(i = 1 to p)Ki (p >= 1, K0 = 0):
+    // r[index] = Fp[index - ∑(i = 1 to p-1)Ki]
     @Override
-    public Queue flatMap(Function<Object, Object> function) {
-        return flatMapImpl(function);
+    public Queue flatMap(Function<Object, List<Object>> function) {
+        assert function != null;
+
+        Iterator<Object> it = iterator();
+        Queue queue = getInstance();
+        while (it.hasNext()) {
+            List<Object> list = function.apply(it.next());
+            for (Object element : list) {
+                queue.enqueue(element);
+            }
+        }
+        return queue;
     }
 
-    protected abstract Queue flatMapImpl(Function<Object, Object> function);
+    // Pre: init != null && op != null
+    // Post: R = Jn, Jn = op(Jn-1, a[n]), J1 = op(init, a[1])
+    @Override
+    public Object reduce(Object init, BinaryOperator<Object> op) {
+        assert init != null;
+        assert op != null;
+
+        Iterator<Object> it = iterator();
+        while (it.hasNext()) {
+            init = op.apply(init, it.next());
+        }
+        return init;
+    }
 }

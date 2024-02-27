@@ -29,7 +29,7 @@ public class ArrayQueueModule {
         assert element != null;
 
         ensureCapacity();
-        int currentTail = (head + size) % elements.length;
+        int currentTail = getTail();
 
         elements[currentTail] = element;
         size++;
@@ -39,7 +39,7 @@ public class ArrayQueueModule {
     // Post: n' = n, immutable(n)
     private static void ensureCapacity() {
         if (size == elements.length) {
-            int currentTail = (head + size) % elements.length;
+            int currentTail = getTail();
             Object[] newElements = new Object[elements.length * 2];
             if (head < currentTail) {
                 System.arraycopy(elements, head, newElements, 0, currentTail - head);
@@ -60,7 +60,7 @@ public class ArrayQueueModule {
         assert element != null;
 
         ensureCapacity();
-        head = (elements.length + head - 1) % elements.length;
+        head = cycleDec(head);
         elements[head] = element;
         size++;
     }
@@ -69,7 +69,7 @@ public class ArrayQueueModule {
     // Post: R = a[1], n' = n && immutable(n')
     public static Object peek() {
         assert !isEmpty();
-        return elements[(size + head - 1) % elements.length];
+        return elements[getPreTail()];
     }
 
     // Pre: n > 0
@@ -77,7 +77,7 @@ public class ArrayQueueModule {
     public static Object remove() {
         assert !isEmpty();
 
-        int currentTail = (head + size - 1) % elements.length;
+        int currentTail = getPreTail();
         Object element = elements[currentTail];
         elements[currentTail] = null;
         size--;
@@ -88,7 +88,7 @@ public class ArrayQueueModule {
     // el = min(A) then ∀x in A x >= el
     // Post: R: R = i: i = min({el: condition(a[el]) == true}) if exists i: condition(a[i]) == true, R = -1 otherwise
     public static int indexIf(Predicate<Object> condition) {
-        for (int i = head, j = 0; j < size; i = (i + 1) % elements.length, j++) {
+        for (int i = head, j = 0; j < size; i = cycleInc(i), j++) {
             if (condition.test(elements[i])) {
                 return j;
             }
@@ -101,7 +101,7 @@ public class ArrayQueueModule {
     // Post: R: R = i: i = max({el: condition(a[el]) == true}) if exists i: condition(a[i]) == true, R = -1 otherwise
     public static int lastIndexIf(Predicate<Object> condition) {
         int lastIndex = -1;
-        for (int i = head, j = 0; j < size; i = (i + 1) % elements.length, j++) {
+        for (int i = head, j = 0; j < size; i = cycleInc(i), j++) {
             if (condition.test(elements[i])) {
                 lastIndex = j;
             }
@@ -124,7 +124,7 @@ public class ArrayQueueModule {
 
         Object element = elements[head];
         elements[head] = null;
-        head = (head + 1) % elements.length;
+        head = cycleInc(head);
         size--;
         return element;
     }
@@ -149,5 +149,28 @@ public class ArrayQueueModule {
         Arrays.fill(elements, null);
         head = 0;
         size = 0;
+    }
+    // Pre: true
+    // Post: true
+    private static int getTail() {
+        return (head + size) % elements.length;
+    }
+
+    // Pre: true
+    // Post: true
+    private static int getPreTail() {
+        return (head + size - 1) % elements.length;
+    }
+
+    // Pre: true
+    // Post: true
+    private static int cycleInc(int value) {
+        return (value + 1) % elements.length;
+    }
+
+    // Pre: true
+    // Post: true
+    private static int cycleDec(int value) {
+        return (elements.length + value - 1) % elements.length;
     }
 }

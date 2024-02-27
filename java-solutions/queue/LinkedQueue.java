@@ -7,9 +7,13 @@ package queue;
 // Let: immutable_pre(k): for i=1..k: a'[i + 1] = a[i]
 // Let: immutable_post(k): for i=1..k: a'[i] = a[i + 1]
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.function.BinaryOperator;
 import java.util.function.Function;
 
-public class LinkedQueue extends AbstractQueue {
+    public class LinkedQueue extends AbstractQueue {
     private Node head;
     private Node tail;
 
@@ -50,15 +54,8 @@ public class LinkedQueue extends AbstractQueue {
     }
 
     @Override
-    protected Queue flatMapImpl(Function<Object, Object> function) {
-        Node currentNode = head;
-        int j = 0;
-        Queue queue = new LinkedQueue();
-        while (j < size) {
-            queue.enqueue(function.apply(currentNode.value));
-            ++j;
-        }
-        return queue;
+    protected Queue getInstance() {
+        return new LinkedQueue();
     }
 
     private static class Node {
@@ -67,6 +64,31 @@ public class LinkedQueue extends AbstractQueue {
         private Node(Object value, Node next) {
             this.next = next;
             this.value = value;
+        }
+    }
+
+    public Iterator<Object> iterator() {
+        return new Itr();
+    }
+
+
+    private class Itr implements Iterator<Object> {
+
+        private Node currentNode;
+        Itr() {
+            currentNode = head;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return currentNode != null;
+        }
+
+        @Override
+        public Object next() {
+            Object value = currentNode.value;
+            currentNode = currentNode.next;
+            return value;
         }
     }
 }
