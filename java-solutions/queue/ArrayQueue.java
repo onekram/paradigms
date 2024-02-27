@@ -63,8 +63,7 @@ public class ArrayQueue extends AbstractQueue {
     public Object peek() {
         assert !isEmpty();
 
-        int currentTail = (head + size) % elements.length;
-        return elements[(elements.length + currentTail - 1) % elements.length];
+        return elements[(head + size - 1) % elements.length];
     }
 
     // Pre: n > 0
@@ -72,10 +71,9 @@ public class ArrayQueue extends AbstractQueue {
     public Object remove() {
         assert !isEmpty();
 
-        int currentTail = (head + size) % elements.length;
-        currentTail = (elements.length + currentTail - 1) % elements.length;
-        Object element = elements[currentTail];
-        elements[currentTail] = null;
+        int index = (head + size - 1) % elements.length;
+        Object element = elements[index];
+        elements[index] = null;
         --size;
         return element;
     }
