@@ -10,44 +10,43 @@ _*
 # Store .git files
 !.git*
 
+# Compiled test files
 *.jar
+
+# Iml file
 paradigms.iml
 
-/java-solutions/base/
-/java-solutions/markup/MarkupListTest.java
-/java-solutions/markup/MarkupTester.java
-/java-solutions/markup/MarkupTest.java
+# Test files
+/java-solutions/**/*Tester.java
+/java-solutions/**/*Test.java
+/java-solutions/**/*TestSet.java
 
-*.txt
+# Package info files
+/java-solutions/**/package-info.java
+
+# base directory
+/java-solutions/base/
+
+# expression/comon directory
 /java-solutions/expression/common/
+
+
+# Expression
 /java-solutions/expression/BigIntegerExpression.java
 /java-solutions/expression/Expression.java
-/java-solutions/expression/ExpressionTester.java
-/java-solutions/expression/ExpressionTest.java
-
-
 /java-solutions/expression/ToMiniString.java
 /java-solutions/expression/TripleExpression.java
 /java-solutions/expression/parser/Operations.java
-/java-solutions/expression/parser/ParserTest.java
-/java-solutions/expression/parser/ParserTester.java
-/java-solutions/expression/parser/ParserTestSet.java
 /java-solutions/expression/parser/TripleParser.java
-/java-solutions/expression/parser/package-info.java
+/java-solutions/expression/ListExpression.java
 
-/java-solutions/markup/package-info.java
-/java-solutions/expression/exceptions/ExceptionsTest.java
-/java-solutions/expression/exceptions/ExceptionsTester.java
-/java-solutions/expression/exceptions/package-info.java
+# Expception
 /java-solutions/expression/exceptions/TripleParser.java
-/java-solutions/expression/exceptions/ExceptionsTestSet.java
-/java-solutions/expression/package-info.java
 
-/java-solutions/search/BinarySearchTest.java
-
+# Queue
 /java-solutions/queue/*Test.java
 !/java-solutions/queue/*MyTest.java
-
-/java-solutions/queue/*Tester.java
 /java-solutions/queue/Queues.java
 
+# Generic
+/java-solutions/expression/generic/Tabulator.java
