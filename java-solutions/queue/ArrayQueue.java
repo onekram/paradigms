@@ -1,11 +1,7 @@
 package queue;
 
-
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.List;
-import java.util.function.BinaryOperator;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 // Model: a[1..n]
