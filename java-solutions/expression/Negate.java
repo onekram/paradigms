@@ -17,7 +17,7 @@ public class Negate extends UnaryOperation {
     }
 
     @Override
-    String getSign() {
+    public String getSign() {
         return "-";
     }
 }

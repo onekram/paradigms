@@ -16,7 +16,6 @@ public class Add extends BinaryOperation {
     protected BigInteger evaluateOperation(BigInteger valueL, BigInteger valueR) {
         return valueL.add(valueR);
     }
-
     @Override
     protected String getSign() {
         return "+";

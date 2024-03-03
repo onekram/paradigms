@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Objects;
 
 public class Const implements MyExpression {
-
     private final Number value;
     public Const(int value) {
         this.value = BigInteger.valueOf(value);
@@ -59,4 +58,6 @@ public class Const implements MyExpression {
     public Priority getPriority() {
         return Priority.NP;
     }
+
+
 }

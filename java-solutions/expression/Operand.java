@@ -16,6 +16,9 @@ public class Operand {
     public static Operand getConst (String name) {
         return new Operand(Operation.CONST, name);
     }
+    public static Operand getUnaryMinus () {
+        return new Operand(Operation.UNARY_MINUS);
+    }
 
     public Operand(String value) {
         name = value;

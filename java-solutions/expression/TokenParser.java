@@ -1,22 +1,25 @@
 package expression;
 
 import java.util.*;
+import java.util.function.Predicate;
 
 public class TokenParser {
     private int pos;
-
+    private int lastPos;
     private Operand currentElement;
     private final String expression;
-    private final HashSet<Character> operations = new HashSet<>(Set.of('+', '*', '/', '&', '^', '|', '(', ')', '[', ']', '{', '}'));
+    private final HashSet<Character> simpleOperations = new HashSet<>(
+            Set.of('+', '*', '/', '&', '^', '|', '(', ')', '[', ']', '{', '}'));
     private final HashSet<Character> openBrackets = new HashSet<>(Set.of('(', '[', '{'));
-    private final HashSet<Character> unaryOperations = new HashSet<>(Set.of('-', 'l', 't'));
     private final HashSet<String> variables;
     private final HashMap<String, Integer> dictVariables;
-
     private final HashMap<Operation, Operation> brackets = new HashMap<>(Map.of(
             Operation.LEFT_BRACE, Operation.RIGHT_BRACE,
             Operation.LEFT_BRACKET, Operation.RIGHT_BRACKET,
             Operation.LEFT_PARENTHESES, Operation.RIGHT_PARENTHESES));
+
+    private final Predicate<Integer> lettersToken;
+    private final Predicate<Integer> digitsToken;
 
     public TokenParser(String expression, List<String> variables) {
         this.variables = new HashSet<>(variables);
@@ -25,6 +28,8 @@ public class TokenParser {
             this.dictVariables.put(variables.get(i), i);
         }
         this.expression = expression;
+        lettersToken = i -> (i < expression.length()) && (Character.isLetter(expression.charAt(i)));
+        digitsToken = i -> (i < expression.length()) && (Character.isDigit(expression.charAt(i)));
         this.currentElement = new Operand(Operation.INIT);
     }
     public String getExpression() {
@@ -39,24 +44,22 @@ public class TokenParser {
 
     public void nextStep() {
         skipSpace();
+        lastPos = pos;
         if (pos >= expression.length()) {
             currentElement = new Operand(Operation.END);
             return;
         }
         char value = expression.charAt(pos);
-        if (!parseVar()) {
-            if (operations.contains(value)) {
-                currentElement = new Operand(String.valueOf(value));
+        if (!parseSimple() && !parseVar() && !parseConst()) {
+            if (value == '-') {
                 pos++;
-            }
-            else if (value == 'm'){
-                currentElement = new Operand(parseToken(true));
-            } else if (value == '<' || value == '>') {
-                currentElement = new Operand(parseToken(true));
-            } else if (unaryOperations.contains(value)) {
-                currentElement = parseMinus();
+                if (isBinaryMinus()) {
+                    currentElement = new Operand("-");
+                } else {
+                    currentElement = Operand.getUnaryMinus();
+                }
             } else {
-                currentElement = Operand.getConst(parseInt());
+                 currentElement = new Operand(parseToken());
             }
         }
     }
@@ -70,19 +73,57 @@ public class TokenParser {
     public boolean isPairedBracket(Operation open, Operation close) {
         return brackets.get(open).equals(close);
     }
+
     private boolean parseVar() {
         StringBuilder sb = new StringBuilder();
         int currentPos = pos;
-        while (currentPos < expression.length() &&
-                !Character.isWhitespace(expression.charAt(currentPos)) &&
-                !operations.contains((expression.charAt(currentPos)))&&
-                expression.charAt(currentPos) != '-')  {
-            sb.append(expression.charAt(currentPos));
-            currentPos++;
+        if (expression.charAt(currentPos) == '$') {
+            do {
+                sb.append(expression.charAt(currentPos));
+                currentPos++;
+            } while (digitsToken.test(currentPos));
+        } else {
+            while (lettersToken.test(currentPos)) {
+                sb.append(expression.charAt(currentPos));
+                currentPos++;
+            }
         }
         if (variables.contains(sb.toString())) {
             currentElement = new Operand(Operation.VAR, sb.toString());
             pos = currentPos;
+            return true;
+        }
+        return false;
+    }
+    private boolean parseConst() {
+        StringBuilder sb = new StringBuilder();
+        int currentPos = pos;
+        if (expression.charAt(currentPos) == '-') {
+            if (isBinaryMinus() || !checkNext()) {
+                return false;
+            }
+            do {
+                sb.append(expression.charAt(currentPos));
+                currentPos++;
+            } while (digitsToken.test(currentPos));
+        } else {
+            while (digitsToken.test(currentPos)) {
+                sb.append(expression.charAt(currentPos));
+                currentPos++;
+            }
+        }
+        if (!sb.isEmpty()) {
+            currentElement = Operand.getConst(sb.toString());
+            pos = currentPos;
+            return true;
+        }
+        return false;
+    }
+    private boolean parseSimple() {
+        char value = expression.charAt(pos);
+        if (simpleOperations.contains(value)){
+            pos++;
+            currentElement = new Operand(String.valueOf(value));
             return true;
         }
         return false;
@@ -95,72 +136,29 @@ public class TokenParser {
     public boolean hasNext() {
         return pos < expression.length();
     }
-    private Operand parseMinus() {
-        if (expression.charAt(pos) == '-') {
-            if (isBinaryMinus()) {
-                pos++;
-                return new Operand("-");
-            } else if (checkNext()) {
-                return Operand.getConst(parseInt());
-            } else {
-                pos++;
-                return new Operand("unary minus");
-            }
-        } else {
-            return new Operand(parseToken(false));
-        }
-    }
-
-    private String  parseToken(boolean checkMinus) {
+    private String parseToken() {
         StringBuilder sb = new StringBuilder();
         while (pos < expression.length() &&
                 !Character.isWhitespace(expression.charAt(pos)) &&
                 !openBrackets.contains(expression.charAt(pos)) &&
-                expression.charAt(pos) != '+')  {
-            if (checkMinus && expression.charAt(pos) == '-') {
-                break;
-            }
+                expression.charAt(pos) != '-') {
             sb.append(expression.charAt(pos));
             pos++;
         }
         return sb.toString();
     }
-
-    private String parseInt() {
-        StringBuilder sb = new StringBuilder();
-        do {
-            sb.append(expression.charAt(pos));
-            pos++;
-        } while (pos < expression.length() && Character.isDigit(expression.charAt(pos)));
-        return sb.toString();
-    }
-
-
     private boolean isBinaryMinus() {
         return currentElement.getType() == Operation.CONST ||
                 isCloseBracket(currentElement.getType()) ||
                 currentElement.getType() == Operation.VAR;
     }
-
     public Operand getCurrentElement() {
         return currentElement;
     }
-
     private boolean checkNext() {
-        int currentPos = pos + 1;
-        if (currentPos < expression.length() && Character.isWhitespace(expression.charAt(currentPos))) {
-            return false;
-        }
-        if (currentPos >= expression.length()) {
-            return false;
-        }
-        return !operations.contains(expression.charAt(currentPos)) &&
-                !Character.isLetter(expression.charAt(currentPos)) &&
-                expression.charAt(currentPos) != '-' &&
-                expression.charAt(currentPos) != '$';
+        return digitsToken.test(pos + 1);
     }
-
     public int getPos() {
-        return pos;
+        return lastPos;
     }
 }

@@ -28,7 +28,7 @@ public class Variable implements MyExpression {
         if (varName.equals("x")) {
             return value;
         }
-        throw new EvaluateException("Error: Invalid name of variable: " + varName);
+        throw new AssertionError("Error: Invalid name of variable: " + varName);
     }
 
     @Override
@@ -44,13 +44,13 @@ public class Variable implements MyExpression {
                 return value3;
             }
         }
-        throw new EvaluateException("Error: Invalid name of variable: " + varName);
+        throw new AssertionError("Error: Invalid name of variable: " + varName);
     }
 
     @Override
     public int evaluate(List<Integer> values) {
         if (varIndex == -1) {
-            throw new EvaluateException("Error: Invalid index of variable: " + varName);
+            throw new AssertionError("Error: Invalid index of variable: " + varName);
         } else {
             return values.get(varIndex);
         }
@@ -61,7 +61,7 @@ public class Variable implements MyExpression {
         if (varName.equals("x")) {
             return value;
         }
-        throw new EvaluateException("Error: Invalid name of variable: " + varName);
+        throw new AssertionError("Error: Invalid name of variable: " + varName);
     }
 
     @Override

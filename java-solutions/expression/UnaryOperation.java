@@ -11,7 +11,6 @@ public abstract class UnaryOperation implements MyExpression {
     }
     protected abstract int evaluateOperation(int value);
     abstract BigInteger evaluateOperation(BigInteger value);
-
     @Override
     public int evaluate(int value) {
         return evaluateOperation(expression.evaluate(value));
@@ -32,7 +31,7 @@ public abstract class UnaryOperation implements MyExpression {
     public BigInteger evaluate(BigInteger value) {
         return evaluateOperation(expression.evaluate(value));
     }
-    abstract String getSign();
+    public abstract String getSign();
 
     @Override
     public String toString() {

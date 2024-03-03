@@ -2,6 +2,7 @@ package expression.parser;
 
 import expression.*;
 import expression.exceptions.ListParser;
+import expression.exceptions.ParsingException;
 import expression.exceptions.UnexpectedTokenException;
 
 import java.util.List;
@@ -9,7 +10,7 @@ import java.util.List;
 public class ExpressionParser implements ListParser {
     protected TokenParser runner;
     private final int start = 6;
-    public MyExpression parse(String expression) {
+    public MyExpression parse(String expression) throws ParsingException {
         this.runner = new TokenParser(expression, List.of("x", "y", "z"));
         runner.nextStep();
         MyExpression ex = expression(start);
@@ -20,7 +21,7 @@ public class ExpressionParser implements ListParser {
     }
 
     @Override
-    public MyExpression parse(String expression, List<String> variables) {
+    public MyExpression parse(String expression, List<String> variables) throws ParsingException{
         this.runner = new TokenParser(expression, variables);
         runner.nextStep();
         MyExpression ex = expression(start);
@@ -30,7 +31,7 @@ public class ExpressionParser implements ListParser {
         return ex;
     }
 
-    private MyExpression expression(int priority) {
+    private MyExpression expression(int priority) throws ParsingException{
         MyExpression first = parseOperand(priority);
 
         while (runner.hasNext()) {
@@ -40,7 +41,7 @@ public class ExpressionParser implements ListParser {
                         runner.getPos());
             }
             if (operator.getType().compare(Priority.getPriority(priority))) {
-                break;
+                return first;
             } else {
                 runner.nextStep();
             }
@@ -50,7 +51,7 @@ public class ExpressionParser implements ListParser {
         }
         return first;
     }
-    MyExpression parseOperand(int priority) {
+    MyExpression parseOperand(int priority) throws ParsingException {
         return priority == 1 ? factor() : expression(priority - 1);
     }
     protected MyExpression action(MyExpression first, MyExpression second, Operand operand) {
@@ -67,11 +68,11 @@ public class ExpressionParser implements ListParser {
             case L_SHIFT -> new LShift(first, second);
             case R_SHIFT -> new RShift(first, second);
             case A_SHIFT -> new AShift(first, second);
-            default -> throw new IllegalArgumentException(String.format("No action expected for '%s'", operand));
+            default -> throw new AssertionError(String.format("No action expected for '%s'", operand));
         };
     }
 
-    protected MyExpression factor() {
+    protected MyExpression factor() throws ParsingException{
         Operand next = runner.getCurrentElement();
         if (next.getType().isBinary()) {
             throw new UnexpectedTokenException(String.format("Unexpected token '%s'", next), runner.getPos());
@@ -93,7 +94,7 @@ public class ExpressionParser implements ListParser {
         return parseStep(next);
     }
 
-    protected MyExpression parseStep(Operand next) {
+    protected MyExpression parseStep(Operand next) throws ParsingException {
         return switch (next.getType()) {
             case UNARY_MINUS -> new Negate(factor());
             case CONST -> new Const(Integer.parseInt(next.getName()));

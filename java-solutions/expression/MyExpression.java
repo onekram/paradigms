@@ -2,7 +2,7 @@ package expression;
 
 import java.math.BigInteger;
 
-public interface MyExpression extends Expression, TripleExpression, BigIntegerExpression, ListExpression{
+public interface MyExpression extends Expression, TripleExpression, BigIntegerExpression, ListExpression {
     int evaluate(int value);
     int evaluate(int value1, int value2, int value3);
 

@@ -20,7 +20,7 @@ public enum Priority {
             case 4 -> XOR;
             case 5 -> OR;
             case 6 -> LOW;
-            default -> throw new IllegalStateException("Unexpected value: " + priority);
+            default -> throw new AssertionError("Unexpected value: " + priority);
         };
     }
 }

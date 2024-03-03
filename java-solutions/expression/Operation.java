@@ -40,7 +40,7 @@ public enum Operation {
         this.name = name;
     }
     public boolean isBinary() {
-        return Set.of(MINUS, PLUS, MUL, DIV, OR, AND, XOR, MAX, MIN).contains(this);
+        return Set.of(MINUS, PLUS, MUL, DIV, OR, AND, XOR, MAX, MIN, R_SHIFT, A_SHIFT, L_SHIFT).contains(this);
     }
 
     public boolean compare(Priority priority) {
@@ -51,7 +51,7 @@ public enum Operation {
             case XOR -> this != XOR;
             case OR -> this != OR && this != DIV;
             case LOW -> this != MIN && this != MAX && this != R_SHIFT && this != L_SHIFT && this != A_SHIFT;
-            default -> throw new IllegalArgumentException();
+            default -> throw new AssertionError("Invalid priority");
         };
     }
 }

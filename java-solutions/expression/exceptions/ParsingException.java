@@ -1,6 +1,6 @@
 package expression.exceptions;
 
-public class ParsingException extends RuntimeException {
+public class ParsingException extends Exception {
     public ParsingException(String message) {
         super(message);
     }
@@ -12,8 +12,7 @@ public class ParsingException extends RuntimeException {
     public ParsingException(String message, int pos) {
         super(format(message, pos));
     }
-
-    public static String format(String message, int pos) {
+    private static String format(String message, int pos) {
         return message + " at position: " + pos;
     }
 }
