@@ -11,28 +11,28 @@ public abstract class BinaryOperation implements MyExpression {
         this.expressionL = expressionL;
         this.expressionR = expressionR;
     }
-    protected abstract int evaluateOperation(int valueL, int valueR);
-    protected abstract BigInteger evaluateOperation(BigInteger valueL, BigInteger valueR);
+    protected abstract int evaluateImpl(int valueL, int valueR);
+    protected abstract BigInteger evaluateImpl(BigInteger valueL, BigInteger valueR);
 
     @Override
     public int evaluate(int value) {
-        return evaluateOperation(expressionL.evaluate(value), expressionR.evaluate(value));
+        return evaluateImpl(expressionL.evaluate(value), expressionR.evaluate(value));
     }
     @Override
     public int evaluate(int value1, int value2, int value3) {
-        return evaluateOperation(expressionL.evaluate(value1, value2, value3),
+        return evaluateImpl(expressionL.evaluate(value1, value2, value3),
                 expressionR.evaluate(value1, value2, value3));
 
     }
     @Override
     public int evaluate(List<Integer> values) {
-        return evaluateOperation(expressionL.evaluate(values),
+        return evaluateImpl(expressionL.evaluate(values),
                 expressionR.evaluate(values));
 
     }
     @Override
     public BigInteger evaluate(BigInteger value) {
-        return evaluateOperation(expressionL.evaluate(value), expressionR.evaluate(value));
+        return evaluateImpl(expressionL.evaluate(value), expressionR.evaluate(value));
     }
     protected abstract String getSign();
     @Override

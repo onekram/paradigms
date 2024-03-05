@@ -9,10 +9,10 @@ public class CheckedNegate extends Negate {
     }
 
     @Override
-    protected int evaluateOperation(int value) {
+    protected int evaluateImpl(int value) {
         if (value == Integer.MIN_VALUE) {
             throw new OverflowException(String.format("Overflow at negation %d", value));
         }
-        return super.evaluateOperation(value);
+        return super.evaluateImpl(value);
     }
 }

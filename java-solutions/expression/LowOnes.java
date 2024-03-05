@@ -8,7 +8,7 @@ public class LowOnes extends UnaryOperation {
     }
 
     @Override
-    protected int evaluateOperation(int value) {
+    protected int evaluateImpl(int value) {
         long mask = 1;
         int count = 0;
         while (Integer.MAX_VALUE * 2L >= mask && (value & mask) != 0) {
@@ -18,7 +18,7 @@ public class LowOnes extends UnaryOperation {
         return count;
     }
     @Override
-    protected BigInteger evaluateOperation(BigInteger valueL) {
+    protected BigInteger evaluateImpl(BigInteger valueL) {
         return valueL.negate();
     }
 

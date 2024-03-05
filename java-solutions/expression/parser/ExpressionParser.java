@@ -31,7 +31,7 @@ public class ExpressionParser implements ListParser {
         return ex;
     }
 
-    private MyExpression expression(int priority) throws ParsingException{
+    private MyExpression expression(int priority) throws ParsingException {
         MyExpression first = parseOperand(priority);
 
         while (runner.hasNext()) {
@@ -105,6 +105,4 @@ public class ExpressionParser implements ListParser {
                     runner.getPos());
         };
     }
-
 }
-

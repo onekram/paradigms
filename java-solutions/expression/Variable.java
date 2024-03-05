@@ -33,18 +33,12 @@ public class Variable implements MyExpression {
 
     @Override
     public int evaluate(int value1, int value2, int value3) {
-        switch (varName) {
-            case "x" -> {
-                return value1;
-            }
-            case "y" -> {
-                return value2;
-            }
-            case "z" -> {
-                return value3;
-            }
-        }
-        throw new AssertionError("Error: Invalid name of variable: " + varName);
+        return switch (varName) {
+            case "x" -> value1;
+            case "y" -> value2;
+            case "z" -> value3;
+            default -> throw new AssertionError("Error: Invalid name of variable: " + varName);
+        };
     }
 
     @Override

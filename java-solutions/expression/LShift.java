@@ -8,12 +8,12 @@ public class LShift extends BinaryOperation {
     }
 
     @Override
-    protected int evaluateOperation(int valueL, int valueR) {
+    protected int evaluateImpl(int valueL, int valueR) {
         return valueL << valueR;
     }
 
     @Override
-    protected BigInteger evaluateOperation(BigInteger valueL, BigInteger valueR) {
+    protected BigInteger evaluateImpl(BigInteger valueL, BigInteger valueR) {
         return valueL.shiftLeft(valueR.intValue());
     }
 

@@ -10,7 +10,7 @@ public class Main {
     public static void main(String[] args) {
         ExpressionParser expressionParser = new ExpressionParser();
         try {
-            MyExpression ex = expressionParser.parse("5min5");
+            MyExpression ex = expressionParser.parse("x + (y + z) + 1 + 2");
             System.out.println(ex.toMiniString());
             System.out.println(ex.getClass());
         } catch (ParsingException e) {

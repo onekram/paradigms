@@ -8,8 +8,8 @@ public class CheckedMultiply extends Multiply {
         super(expressionL, expressionR);
     }
     @Override
-    protected int evaluateOperation(int valueL, int valueR) {
-        int res = super.evaluateOperation(valueL, valueR);
+    protected int evaluateImpl(int valueL, int valueR) {
+        int res = super.evaluateImpl(valueL, valueR);
         if (valueR != 0 && valueL != res / valueR || valueL == Integer.MIN_VALUE && valueR == -1) {
             throw new OverflowException(String.format("Overflow at multiplication %d * %d", valueL, valueR));
         }

@@ -9,27 +9,27 @@ public abstract class UnaryOperation implements MyExpression {
     public UnaryOperation(MyExpression expression) {
         this.expression = expression;
     }
-    protected abstract int evaluateOperation(int value);
-    abstract BigInteger evaluateOperation(BigInteger value);
+    protected abstract int evaluateImpl(int value);
+    abstract BigInteger evaluateImpl(BigInteger value);
     @Override
     public int evaluate(int value) {
-        return evaluateOperation(expression.evaluate(value));
+        return evaluateImpl(expression.evaluate(value));
     }
 
     @Override
     public int evaluate(int value1, int value2, int value3) {
-        return evaluateOperation(expression.evaluate(value1, value2, value3));
+        return evaluateImpl(expression.evaluate(value1, value2, value3));
 
     }
 
     @Override
     public int evaluate(List<Integer> values) {
-        return evaluateOperation(expression.evaluate(values));
+        return evaluateImpl(expression.evaluate(values));
 
     }
     @Override
     public BigInteger evaluate(BigInteger value) {
-        return evaluateOperation(expression.evaluate(value));
+        return evaluateImpl(expression.evaluate(value));
     }
     public abstract String getSign();
 

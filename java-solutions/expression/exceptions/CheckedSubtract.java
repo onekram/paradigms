@@ -8,8 +8,8 @@ public class CheckedSubtract extends Subtract {
         super(expressionL, expressionR);
     }
     @Override
-    protected int evaluateOperation(int valueL, int valueR) {
-        int res = super.evaluateOperation(valueL, valueR);
+    protected int evaluateImpl(int valueL, int valueR) {
+        int res = super.evaluateImpl(valueL, valueR);
         if (valueL >= 0 && valueR < 0 && res < 0 || valueL < 0 && valueR >= 0 && res >= 0) {
             throw new OverflowException(String.format("Overflow at subtract %d - %d", valueL, valueR));
         }

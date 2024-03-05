@@ -8,11 +8,11 @@ public class Negate extends UnaryOperation {
     }
 
     @Override
-    protected int evaluateOperation(int value) {
+    protected int evaluateImpl(int value) {
         return -value;
     }
     @Override
-    protected BigInteger evaluateOperation(BigInteger valueL) {
+    protected BigInteger evaluateImpl(BigInteger valueL) {
         return valueL.negate();
     }
 

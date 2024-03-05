@@ -8,8 +8,8 @@ public class CheckedDivide extends Divide {
         super(expressionL, expressionR);
     }
     @Override
-    protected int evaluateOperation(int valueL, int valueR) {
-        int res = super.evaluateOperation(valueL, valueR);
+    protected int evaluateImpl(int valueL, int valueR) {
+        int res = super.evaluateImpl(valueL, valueR);
         if (valueR == 0) {
             throw new DivisionByZeroException("Division by zero");
         }

@@ -9,12 +9,12 @@ public class Min extends BinaryOperation {
     }
 
     @Override
-    protected int evaluateOperation(int valueL, int valueR) {
+    protected int evaluateImpl(int valueL, int valueR) {
         return Math.min(valueL, valueR);
     }
 
     @Override
-    protected BigInteger evaluateOperation(BigInteger valueL, BigInteger valueR) {
+    protected BigInteger evaluateImpl(BigInteger valueL, BigInteger valueR) {
         return valueL.min(valueR);
     }
 
