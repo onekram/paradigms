@@ -5,9 +5,9 @@ import expression.generic.type.Mode;
 
 public class BinaryOperation<T extends Number> {
     private final FuncBi<T> func;
-    private final Priority priority;
+    private final int priority;
 
-    public BinaryOperation(FuncBi<T> func, Priority priority) {
+    public BinaryOperation(FuncBi<T> func, int priority) {
         this.func = func;
         this.priority = priority;
     }
@@ -16,7 +16,7 @@ public class BinaryOperation<T extends Number> {
         return (mode, x, y, z) -> func.evaluateImpl(mode, a.evaluate(mode, x, y, z), b.evaluate(mode, x, y, z));
     }
 
-    public Priority getPriority() {
+    public int getPriority() {
         return priority;
     }
 

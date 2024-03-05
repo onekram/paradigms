@@ -5,7 +5,6 @@ import java.util.function.Predicate;
 
 public class TokenParser {
 
-    private final char EOE = '\0';
     private int pos;
     private String token;
     private final String expression;
@@ -32,7 +31,7 @@ public class TokenParser {
 
     private char getChar(int i) {
         if (i >= expression.length()) {
-            return EOE;
+            return '\0';
         }
         return expression.charAt(i);
     }
@@ -145,6 +144,9 @@ public class TokenParser {
 
     public boolean test(char c) {
         return getChar(pos) == c;
+    }
+    public boolean take(char c) {
+        return getChar(pos++) == c;
     }
 
     public void setPos(int pos) {
