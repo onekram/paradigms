@@ -84,7 +84,7 @@ public abstract class AbstractQueue implements Queue {
     public abstract Iterator<Object> iterator();
 
     // Pre: true
-    // Post: true
+    // Post: R R.n = 0
     protected abstract Queue getInstance();
 
     // Pre: function != null
