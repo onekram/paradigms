@@ -50,3 +50,6 @@ paradigms.iml
 
 # Generic
 /java-solutions/expression/generic/Tabulator.java
+
+# Compiled files
+/out/
