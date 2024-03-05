@@ -77,7 +77,7 @@ public class GenericTabulator implements Tabulator {
     private static <T extends Number> Expression<T> getExpression(String expression) throws ParsingException {
         ExpressionParser<T> parser = new ExpressionParser<>(
                 Map.of(
-                        "+", new BinaryOperation<>(Mode::add, Priority.COMMON),
+                        "+", new BinaryOperation<>(Mode::add, Priority.COMMON), // :NOTE: числовые приоритеты
                         "-", new BinaryOperation<>(Mode::subtract, Priority.COMMON),
                         "*", new BinaryOperation<>(Mode::multiply, Priority.HIGH),
                         "/", new BinaryOperation<>(Mode::divide, Priority.HIGH),

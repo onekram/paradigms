@@ -8,27 +8,27 @@ public class ByteMode implements Mode<Byte> {
 
     @Override
     public Byte multiply(Byte v1, Byte v2) {
-        return (byte)(v1 * v2);
+        return (byte) (v1 * v2);
     }
 
     @Override
     public Byte divide(Byte v1, Byte v2) {
-        return (byte)(v1 / v2);
+        return (byte) (v1 / v2);
     }
 
     @Override
     public Byte add(Byte v1, Byte v2) {
-        return (byte)(v1 + v2);
+        return (byte) (v1 + v2);
     }
 
     @Override
     public Byte subtract(Byte v1, Byte v2) {
-        return (byte)(v1 - v2);
+        return (byte) (v1 - v2);
     }
 
     @Override
     public Byte negate(Byte v1) {
-        return (byte)(-v1);
+        return (byte) (-v1);
     }
 
     @Override

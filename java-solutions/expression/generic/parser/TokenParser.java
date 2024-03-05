@@ -25,6 +25,7 @@ public class TokenParser {
                 !Character.isDigit(getChar(i)) &&
                 !Character.isLetter(getChar(i));
     }
+
     public boolean isEnd() {
         return pos >= expression.length();
     }
@@ -48,6 +49,7 @@ public class TokenParser {
         }
         return false;
     }
+
     public boolean parseConst() {
         StringBuilder sb = new StringBuilder();
         int currentPos = pos;
@@ -69,17 +71,21 @@ public class TokenParser {
         }
         return false;
     }
+
     public void skipSpace() {
         while (pos < expression.length() && test(Character::isWhitespace)) {
             pos++;
         }
     }
+
     public boolean hasNext() {
         return pos < expression.length();
     }
+
     public void step() {
         pos++;
     }
+
     public <S> boolean parseToken(Map<String, S> operations) {
         skipSpace();
         StringBuilder sb = new StringBuilder();
@@ -123,14 +129,16 @@ public class TokenParser {
         } else {
             condition = simpleToken;
         }
-         do {
+        do {
             sb.append(getChar(currentPos++));
         } while (condition.test(currentPos));
         return sb.toString();
     }
+
     public boolean test(Predicate<Character> condition, int currentPos) {
         return condition.test(getChar(currentPos));
     }
+
     public boolean test(Predicate<Character> condition) {
         return condition.test(getChar(pos));
     }
@@ -146,9 +154,11 @@ public class TokenParser {
     public int getPos() {
         return pos;
     }
+
     public String getToken() {
         return token;
     }
+
     private boolean checkNext() {
         return digitsToken.test(pos + 1);
     }

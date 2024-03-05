@@ -55,9 +55,10 @@ public class ExpressionParser<T extends Number> {
         }
         return first;
     }
+
     public Expression<T> factor() throws ParsingException {
         tokenParser.skipSpace();
-        if (tokenParser.test('(')) {
+        if (tokenParser.test('(')) { // :NOTE: take()
             tokenParser.step();
             Expression<T> result = expression(start);
             if (tokenParser.isEnd()) {
@@ -74,7 +75,7 @@ public class ExpressionParser<T extends Number> {
         }
         if (tokenParser.parseVar()) {
             return new Variable<>(tokenParser.getToken());
-        } else if (tokenParser.parseConst()) {
+        } else if (tokenParser.parseConst()) { // :NOTE: парсинг констант?
             return new Const<>(Integer.parseInt(tokenParser.getToken()));
         } else if (tokenParser.parseToken(unaryOperations)) {
             return unaryOperations.get(tokenParser.getToken()).apply(factor());

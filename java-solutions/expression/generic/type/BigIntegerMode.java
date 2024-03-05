@@ -7,6 +7,7 @@ public class BigIntegerMode implements Mode<BigInteger> {
     public BigInteger getFromInt(int value) {
         return BigInteger.valueOf(value);
     }
+
     @Override
     public BigInteger multiply(BigInteger v1, BigInteger v2) {
         return v1.multiply(v2);
