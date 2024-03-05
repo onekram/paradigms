@@ -36,6 +36,7 @@ import java.util.Iterator;
         return head.value;
     }
 
+    // :NOTE: memory leak
     @Override
     public Object dequeueImpl() {
         Object value = head.value;
@@ -63,7 +64,9 @@ import java.util.Iterator;
         }
     }
 
+    // :NOTE: member order
     public Iterator<Object> iterator() {
+        // :NOTE: return null
         return new Itr();
     }
 
