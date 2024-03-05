@@ -7,4 +7,7 @@ public interface Mode<T extends Number> {
     T add (T v1, T v2);
     T subtract(T v1, T v2);
     T negate (T v1);
+    T min (T v1, T v2);
+    T max (T v1, T v2);
+    T count(T v1);
 }

@@ -41,6 +41,9 @@ import java.util.Iterator;
     public Object dequeueImpl() {
         Object value = head.value;
         head = head.next;
+        if (head == null) {
+            tail = null;
+        }
 
         return value;
     }
@@ -55,21 +58,20 @@ import java.util.Iterator;
         return new LinkedQueue();
     }
 
-    private static class Node {
-        private Node next;
-        private final Object value;
-        private Node(Object value, Node next) {
-            this.next = next;
-            this.value = value;
-        }
-    }
-
     // :NOTE: member order
     public Iterator<Object> iterator() {
         // :NOTE: return null
         return new Itr();
     }
 
+        private static class Node {
+            private Node next;
+            private final Object value;
+            private Node(Object value, Node next) {
+                this.next = next;
+                this.value = value;
+            }
+        }
 
     private class Itr implements Iterator<Object> {
 
@@ -78,11 +80,15 @@ import java.util.Iterator;
             currentNode = head;
         }
 
+        // Pre: true
+        // Post: I.index < n;
         @Override
         public boolean hasNext() {
             return currentNode != null;
         }
 
+        // Pre: true
+        // Post: R = a[index'], index' = index + 1;
         @Override
         public Object next() {
             Object value = currentNode.value;

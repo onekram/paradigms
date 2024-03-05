@@ -54,4 +54,19 @@ public class CheckedIntegerMode implements Mode<Integer> {
         }
         return -v1;
     }
+
+    @Override
+    public Integer min(Integer v1, Integer v2) {
+        return Math.min(v1, v2);
+    }
+
+    @Override
+    public Integer max(Integer v1, Integer v2) {
+        return Math.max(v1, v2);
+    }
+
+    @Override
+    public Integer count(Integer v1) {
+        return Integer.bitCount(v1);
+    }
 }

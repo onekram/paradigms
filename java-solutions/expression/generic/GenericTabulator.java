@@ -7,10 +7,7 @@ import expression.generic.operations.BinaryOperation;
 import expression.generic.operations.Expression;
 import expression.generic.operations.UnaryOperation;
 import expression.generic.parser.ExpressionParser;
-import expression.generic.type.BigIntegerMode;
-import expression.generic.type.CheckedIntegerMode;
-import expression.generic.type.DoubleMode;
-import expression.generic.type.Mode;
+import expression.generic.type.*;
 
 import java.util.Map;
 
@@ -18,7 +15,10 @@ public class GenericTabulator implements Tabulator {
      static Map<String, Mode<? extends Number>> modes = Map.of(
             "i", new CheckedIntegerMode(),
             "d", new DoubleMode(),
-            "bi", new BigIntegerMode()
+            "bi", new BigIntegerMode(),
+             "u", new IntegerMode(),
+             "b", new ByteMode(),
+             "sat", new SatMode()
     );
 
     public static void main(String[] args) throws ParsingException {
@@ -80,10 +80,14 @@ public class GenericTabulator implements Tabulator {
                         "+", new BinaryOperation<>(Mode::add, Priority.COMMON),
                         "-", new BinaryOperation<>(Mode::subtract, Priority.COMMON),
                         "*", new BinaryOperation<>(Mode::multiply, Priority.HIGH),
-                        "/", new BinaryOperation<>(Mode::divide, Priority.HIGH)
+                        "/", new BinaryOperation<>(Mode::divide, Priority.HIGH),
+                        "min", new BinaryOperation<>(Mode::min, Priority.LOW),
+                        "max", new BinaryOperation<>(Mode::max, Priority.LOW)
                 ),
                 Map.of(
-                        "-", new UnaryOperation<>(Mode::negate)
+                        "-", new UnaryOperation<>(Mode::negate),
+                        "count", new UnaryOperation<>(Mode::count)
+
                 )
         );
 

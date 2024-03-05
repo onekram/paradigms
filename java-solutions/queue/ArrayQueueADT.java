@@ -11,8 +11,8 @@ import java.util.function.Predicate;
 // Let: immutable_post(k): for i=1..k: a'[i] = a[i + 1]
 public class ArrayQueueADT {
     private Object[] elements = new Object[2];
-    // :NOTE: 3 vars
     private int head;
+
     private int size;
 
     // Pre: true
@@ -92,11 +92,12 @@ public class ArrayQueueADT {
     }
 
     // :NOTE: condition == null
-    // Pre: queue != null
+    // Pre: queue != null && condition != null
     // el = min(A) then ∀x in A x >= el
     // Post: R: R = i: i = min({el: condition(a[el]) == true}) if exists i: condition(a[i]) == true, R = -1 otherwise
     public static int indexIf(ArrayQueueADT queue, Predicate<Object> condition) {
         assert queue != null;
+        assert condition != null;
 
         // :NOTE: performance
         for (int i = queue.head, j = 0; j < queue.size; i = cycleInc(queue, i), j++) {
@@ -107,11 +108,12 @@ public class ArrayQueueADT {
         return -1;
     }
 
-    // Pre: queue != null
+    // Pre: queue != null && condition != null
     // el = max(A) then ∀x in A x <= el
     // Post: R: R = i: i = max({el: condition(a[el]) == true}) if exists i: condition(a[i]) == true, R = -1 otherwise
     public static int lastIndexIf(ArrayQueueADT queue, Predicate<Object> condition) {
         assert queue != null;
+        assert condition != null;
 
         // :NOTE: copy-paste
         int lastIndex = -1;
@@ -122,6 +124,7 @@ public class ArrayQueueADT {
         }
         return lastIndex;
     }
+
 
     // Pre: n > 0
     // Post: R = a[1], n' = n && immutable(n')
@@ -188,12 +191,18 @@ public class ArrayQueueADT {
     // Pre: queue != null
     // Post: true
     private static int cycleInc(ArrayQueueADT queue, int value) {
-        return (value + 1) % queue.elements.length;
+        if (value + 1 >= queue.elements.length) {
+            return value + 1 - queue.elements.length;
+        }
+        return value + 1;
     }
 
     // Pre: queue != null
     // Post: true
     private static int cycleDec(ArrayQueueADT queue, int value) {
-        return (queue.elements.length + value - 1) % queue.elements.length;
+        if (queue.elements.length + value - 1 >= queue.elements.length) {
+            return queue.elements.length + value - 1 - queue.elements.length;
+        }
+        return queue.elements.length + value - 1;
     }
 }

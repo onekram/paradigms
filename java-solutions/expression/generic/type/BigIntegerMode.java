@@ -31,5 +31,20 @@ public class BigIntegerMode implements Mode<BigInteger> {
     public BigInteger negate(BigInteger v1) {
         return v1.negate();
     }
+
+    @Override
+    public BigInteger min(BigInteger v1, BigInteger v2) {
+        return v1.min(v2);
+    }
+
+    @Override
+    public BigInteger max(BigInteger v1, BigInteger v2) {
+        return v1.max(v2);
+    }
+
+    @Override
+    public BigInteger count(BigInteger v1) {
+        return BigInteger.valueOf(v1.bitCount());
+    }
 }
 

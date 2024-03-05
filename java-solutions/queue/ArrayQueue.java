@@ -166,10 +166,15 @@ public class ArrayQueue extends AbstractQueue {
             index = head;
             step = 0;
         }
+        // Pre: true
+        // Post: I.index < n;
         @Override
         public boolean hasNext() {
             return step < size;
         }
+
+        // Pre: true
+        // Post: R = a[index'], index' = index + 1;
         @Override
         public Object next() {
             Object value = elements[index];

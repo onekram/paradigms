@@ -40,15 +40,17 @@ public interface Queue {
 
     // :NOTE: v -> [null]
     // Pre: function != null
-    // function: Object -> List<Object>; ∀ i: 1 < i < n: function(a[i]) = Fi[1..Ki]
+    // function: Object -> List<Object>;
+    // Let: ∀ i: 1 < i < n: function(a[i]) = Fi[1..Ki]
+    // ∀ el: 1 < el < Ki: Fi[el] != null
     // Post: R = r[1..∑(i = 1 to n)Ki]
     // :NOTE: p?
-    // where ∀ index: ∑(i = 1 to p-1)Ki < index <= ∑(i = 1 to p)Ki (p >= 1, K0 = 0):
+    // for p = 1..n: ∀ index: ∑(i = 1 to p-1)Ki < index <= ∑(i = 1 to p)Ki (K0 = 0):
     // r[index] = Fp[index - ∑(i = 1 to p-1)Ki]
     Queue flatMap(Function<Object, List<Object>> function);
 
     // :NOTE: init != null
-    // Pre: init != null && op != null
+    // Pre: op != null
     // Post: R = Jn,
     // Let: J1 = op(init, a[1])
     //      Jn = op(J{n-1}, a[n]), n > 1
@@ -56,6 +58,6 @@ public interface Queue {
 
     // :NOTE: contract
     // Pre: true
-    // Post: true
+    // Post: R = I, I.index = 0
     Iterator<Object> iterator();
 }
