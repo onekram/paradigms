@@ -12,7 +12,7 @@ public class BinaryOperation<T extends Number> {
         this.priority = priority;
     }
 
-    public Expression<T> apply(final Expression<T> a, final Expression<T> b) {
+    public Expression<T> apply(Expression<T> a, Expression<T> b) {
         return (mode, x, y, z) -> func.evaluateImpl(mode, a.evaluate(mode, x, y, z), b.evaluate(mode, x, y, z));
     }
 
@@ -22,6 +22,6 @@ public class BinaryOperation<T extends Number> {
 
     @FunctionalInterface
     public interface FuncBi<T extends Number> {
-        T evaluateImpl(final Mode<T> mode, final T a, final T b);
+        T evaluateImpl(Mode<T> mode, T a, T b);
     }
 }

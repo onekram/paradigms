@@ -7,11 +7,7 @@ package queue;
 // Let: immutable_pre(k): for i=1..k: a'[i + 1] = a[i]
 // Let: immutable_post(k): for i=1..k: a'[i] = a[i + 1]
 
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
-import java.util.function.BinaryOperator;
-import java.util.function.Function;
 
     public class LinkedQueue extends AbstractQueue {
     private Node head;
