@@ -10,7 +10,7 @@ import expression.generic.operations.*;
 import java.util.Map;
 
 public class ExpressionParser<T extends Number> {
-    protected TokenParser tokenParser;
+    private TokenParser tokenParser;
     private final Map<String, BinaryOperation<T>> binaryOperations;
     private final Map<String, UnaryOperation<T>> unaryOperations;
 
@@ -41,7 +41,7 @@ public class ExpressionParser<T extends Number> {
             }
             int currentPos = tokenParser.getPos();
             if (tokenParser.parseToken(binaryOperations)) {
-                element = tokenParser.getCurrentElement();
+                element = tokenParser.getToken();
             } else {
                 throw new UnexpectedTokenException(String.format("Unexpected token '%s'", tokenParser.parseToken()),
                         tokenParser.getPos());
@@ -60,18 +60,24 @@ public class ExpressionParser<T extends Number> {
         if (tokenParser.test('(')) {
             tokenParser.step();
             Expression<T> result = expression(start);
+            if (tokenParser.isEnd()) {
+                throw new UnexpectedTokenException("Expected )");
+            }
             if (!tokenParser.test(')')) {
                 throw new ParsingException("Expected ) but found " + tokenParser.parseToken());
             }
             tokenParser.step();
             return result;
         }
+        if (tokenParser.isEnd()) {
+            throw new UnexpectedTokenException("Unexpected end of expression");
+        }
         if (tokenParser.parseVar()) {
-            return new Variable<>(tokenParser.getCurrentElement());
+            return new Variable<>(tokenParser.getToken());
         } else if (tokenParser.parseConst()) {
-            return new Const<>(Integer.parseInt(tokenParser.getCurrentElement()));
+            return new Const<>(Integer.parseInt(tokenParser.getToken()));
         } else if (tokenParser.parseToken(unaryOperations)) {
-            return unaryOperations.get(tokenParser.getCurrentElement()).apply(factor());
+            return unaryOperations.get(tokenParser.getToken()).apply(factor());
         } else {
             throw new UnexpectedTokenException(String.format("Unexpected token '%s'", tokenParser.parseToken()),
                     tokenParser.getPos());

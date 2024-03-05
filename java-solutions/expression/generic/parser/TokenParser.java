@@ -4,33 +4,46 @@ import java.util.*;
 import java.util.function.Predicate;
 
 public class TokenParser {
+
+    private final char EOE = '\0';
     private int pos;
-    private int lastPos;
-    private String currentElement;
+    private String token;
     private final String expression;
     private final HashSet<Character> openBrackets = new HashSet<>(Set.of('(', '[', '{'));
     private final HashSet<String> variables = new HashSet<>(Set.of("x", "y", "z"));
     private final Predicate<Integer> lettersToken;
     private final Predicate<Integer> digitsToken;
+    private final Predicate<Integer> simpleToken;
 
     public TokenParser(String expression) {
         this.expression = expression;
-        lettersToken = i -> (i < expression.length()) && (Character.isLetter(expression.charAt(i)));
-        digitsToken = i -> (i < expression.length()) && (Character.isDigit(expression.charAt(i)));
+        lettersToken = i -> i < expression.length() && Character.isLetter(getChar(i));
+        digitsToken = i -> i < expression.length() && Character.isDigit(getChar(i));
+        simpleToken = i -> i < expression.length() &&
+                !Character.isWhitespace(getChar(i)) &&
+                !openBrackets.contains(getChar(i)) &&
+                !Character.isDigit(getChar(i)) &&
+                !Character.isLetter(getChar(i));
     }
     public boolean isEnd() {
         return pos >= expression.length();
+    }
+
+    private char getChar(int i) {
+        if (i >= expression.length()) {
+            return EOE;
+        }
+        return expression.charAt(i);
     }
 
     public boolean parseVar() {
         StringBuilder sb = new StringBuilder();
         int currentPos = pos;
         while (lettersToken.test(currentPos)) {
-            sb.append(expression.charAt(currentPos++));
+            sb.append(getChar(currentPos++));
         }
         if (variables.contains(sb.toString())) {
-            currentElement = sb.toString();
-            pos = currentPos;
+            setCurrentToken(sb.toString(), currentPos);
             return true;
         }
         return false;
@@ -43,16 +56,15 @@ public class TokenParser {
                 return false;
             }
             do {
-                sb.append(expression.charAt(currentPos++));
+                sb.append(getChar(currentPos++));
             } while (digitsToken.test(currentPos));
         } else {
             while (digitsToken.test(currentPos)) {
-                sb.append(expression.charAt(currentPos++));
+                sb.append(getChar(currentPos++));
             }
         }
         if (!sb.isEmpty()) {
-            currentElement = sb.toString();
-            pos = currentPos;
+            setCurrentToken(sb.toString(), currentPos);
             return true;
         }
         return false;
@@ -72,18 +84,17 @@ public class TokenParser {
         skipSpace();
         StringBuilder sb = new StringBuilder();
         int currentPos = pos;
-        Predicate<Character> condition;
+        Predicate<Integer> condition;
         boolean flag = test(Character::isLetter, currentPos); // Parsing not a simple operation
         if (flag) {
-            condition = ch -> Character.isDigit(ch) || Character.isLetter(ch);
+            condition = lettersToken.or(digitsToken);
         } else {
-            condition = ch -> !Character.isWhitespace(ch) && !openBrackets.contains(ch) && !Character.isDigit(ch) && !Character.isLetter(ch);
+            condition = simpleToken;
         }
-        while (currentPos < expression.length() && test(condition, currentPos)) {
-            sb.append(expression.charAt(currentPos++));
+        while (condition.test(currentPos)) {
+            sb.append(getChar(currentPos++));
             if (!flag && operations.containsKey(sb.toString())) {
-                currentElement = sb.toString();
-                pos = currentPos;
+                setCurrentToken(sb.toString(), currentPos);
                 return true;
             }
         }
@@ -91,37 +102,41 @@ public class TokenParser {
             return false;
         }
         if (operations.containsKey(sb.toString())) {
-            currentElement = sb.toString();
-            pos = currentPos;
+            setCurrentToken(sb.toString(), currentPos);
             return true;
         }
         return false;
+    }
+
+    private void setCurrentToken(String token, int pos) {
+        this.token = token;
+        this.pos = pos;
     }
 
     public String parseToken() {
         skipSpace();
         StringBuilder sb = new StringBuilder();
         int currentPos = pos;
-        Predicate<Character> condition;
+        Predicate<Integer> condition;
         if (test(Character::isLetter, currentPos)) {
-            condition = ch -> Character.isDigit(ch) || Character.isLetter(ch);
+            condition = lettersToken.or(digitsToken);
         } else {
-            condition = ch -> !Character.isWhitespace(ch) && !openBrackets.contains(ch) && !Character.isDigit(ch) && !Character.isLetter(ch);
+            condition = simpleToken;
         }
-        while (currentPos < expression.length() && test(condition, currentPos)) {
-            sb.append(expression.charAt(currentPos++));
-        }
+         do {
+            sb.append(getChar(currentPos++));
+        } while (condition.test(currentPos));
         return sb.toString();
     }
     public boolean test(Predicate<Character> condition, int currentPos) {
-        return condition.test(expression.charAt(currentPos));
+        return condition.test(getChar(currentPos));
     }
     public boolean test(Predicate<Character> condition) {
-        return condition.test(expression.charAt(pos));
+        return condition.test(getChar(pos));
     }
 
     public boolean test(char c) {
-        return expression.charAt(pos) == c;
+        return getChar(pos) == c;
     }
 
     public void setPos(int pos) {
@@ -131,8 +146,8 @@ public class TokenParser {
     public int getPos() {
         return pos;
     }
-    public String getCurrentElement() {
-        return currentElement;
+    public String getToken() {
+        return token;
     }
     private boolean checkNext() {
         return digitsToken.test(pos + 1);
