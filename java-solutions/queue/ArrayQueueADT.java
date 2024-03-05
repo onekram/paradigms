@@ -21,8 +21,7 @@ public class ArrayQueueADT {
         return new ArrayQueueADT();
     }
 
-    // :NOTE: enqueue(null, "hello")
-    // Pre: element != null && queue != null
+    // Pre: queue != null && element != null
     // Post: n' = n + 1 &&
     //       a'[n'] = element &&
     //       immutable(n)
@@ -38,7 +37,7 @@ public class ArrayQueueADT {
         queue.size++;
     }
 
-    // Pre: true && queue != null
+    // Pre: queue != null
     // Post: n' = n, immutable(n)
     private static void ensureCapacity(ArrayQueueADT queue) {
         assert queue != null;
@@ -85,7 +84,6 @@ public class ArrayQueueADT {
         assert queue != null;
         assert !isEmpty(queue);
 
-        // :NOTE: copy-paste
         int currentTail = getPreTail(queue);
         Object element = queue.elements[currentTail];
         queue.elements[currentTail] = null;
@@ -93,13 +91,14 @@ public class ArrayQueueADT {
         return element;
     }
 
+    // :NOTE: condition == null
     // Pre: queue != null
-    // :NOTE: informal
     // el = min(A) then ∀x in A x >= el
     // Post: R: R = i: i = min({el: condition(a[el]) == true}) if exists i: condition(a[i]) == true, R = -1 otherwise
     public static int indexIf(ArrayQueueADT queue, Predicate<Object> condition) {
         assert queue != null;
 
+        // :NOTE: performance
         for (int i = queue.head, j = 0; j < queue.size; i = cycleInc(queue, i), j++) {
             if (condition.test(queue.elements[i])) {
                 return j;
@@ -114,6 +113,7 @@ public class ArrayQueueADT {
     public static int lastIndexIf(ArrayQueueADT queue, Predicate<Object> condition) {
         assert queue != null;
 
+        // :NOTE: copy-paste
         int lastIndex = -1;
         for (int i = queue.head, j = 0; j < queue.size; i = cycleInc(queue, i), j++) {
             if (condition.test(queue.elements[i])) {
@@ -182,24 +182,18 @@ public class ArrayQueueADT {
     // Pre: queue != null
     // Post: true
     private static int getPreTail(ArrayQueueADT queue) {
-        assert queue != null;
-
         return (queue.head + queue.size - 1) % queue.elements.length;
     }
 
     // Pre: queue != null
     // Post: true
     private static int cycleInc(ArrayQueueADT queue, int value) {
-        assert queue != null;
-
         return (value + 1) % queue.elements.length;
     }
 
     // Pre: queue != null
     // Post: true
     private static int cycleDec(ArrayQueueADT queue, int value) {
-        assert queue != null;
-
         return (queue.elements.length + value - 1) % queue.elements.length;
     }
 }
