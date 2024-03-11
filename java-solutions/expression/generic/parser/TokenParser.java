@@ -52,15 +52,16 @@ public class TokenParser {
     public boolean parseConst() {
         StringBuilder sb = new StringBuilder();
         int currentPos = pos;
+        Predicate<Integer> condition = digitsToken.or((i -> getChar(i) == '.'));
         if (test('-')) {
             if (!checkNext()) {
                 return false;
             }
             do {
                 sb.append(getChar(currentPos++));
-            } while (digitsToken.test(currentPos));
+            } while (condition.test(currentPos));
         } else {
-            while (digitsToken.test(currentPos)) {
+            while (condition.test(currentPos)) {
                 sb.append(getChar(currentPos++));
             }
         }

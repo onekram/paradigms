@@ -7,6 +7,11 @@ public class ByteMode implements Mode<Byte> {
     }
 
     @Override
+    public Byte getFromString(String value) {
+        return (byte) Integer.parseInt(value);
+    }
+
+    @Override
     public Byte multiply(Byte v1, Byte v2) {
         return (byte) (v1 * v2);
     }

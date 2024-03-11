@@ -9,6 +9,11 @@ public class BigIntegerMode implements Mode<BigInteger> {
     }
 
     @Override
+    public BigInteger getFromString(String value) {
+        return getFromInt(Integer.parseInt(value));
+    }
+
+    @Override
     public BigInteger multiply(BigInteger v1, BigInteger v2) {
         return v1.multiply(v2);
     }

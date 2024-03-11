@@ -10,6 +10,11 @@ public class CheckedIntegerMode implements Mode<Integer> {
     }
 
     @Override
+    public Integer getFromString(String value) {
+        return Integer.parseInt(value);
+    }
+
+    @Override
     public Integer multiply(Integer v1, Integer v2) {
         int res = v1 * v2;
         if (v2 != 0 && v1 != res / v2 || v1 == Integer.MIN_VALUE && v2 == -1) {

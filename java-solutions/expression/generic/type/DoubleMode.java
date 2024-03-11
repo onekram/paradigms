@@ -8,6 +8,11 @@ public class DoubleMode implements Mode<Double> {
     }
 
     @Override
+    public Double getFromString(String value) {
+        return Double.parseDouble(value);
+    }
+
+    @Override
     public Double multiply(Double v1, Double v2) {
         return v1 * v2;
     }

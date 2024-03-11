@@ -79,7 +79,7 @@ public class ExpressionParser<T extends Number> {
         if (tokenParser.parseVar()) {
             return new Variable<>(tokenParser.getToken());
         } else if (tokenParser.parseConst()) { // :NOTE: парсинг констант?
-            return new Const<>(Integer.parseInt(tokenParser.getToken()));
+            return new Const<>(tokenParser.getToken());
         } else if (tokenParser.parseToken(unaryOperations)) {
             return unaryOperations.get(tokenParser.getToken()).apply(factor());
         } else {

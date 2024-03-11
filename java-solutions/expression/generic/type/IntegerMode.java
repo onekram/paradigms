@@ -9,6 +9,11 @@ public class IntegerMode implements Mode<Integer> {
     }
 
     @Override
+    public Integer getFromString(String value) {
+        return Integer.parseInt(value);
+    }
+
+    @Override
     public Integer multiply(Integer v1, Integer v2) {
         return v1 * v2;
     }

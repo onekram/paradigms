@@ -8,6 +8,10 @@ public class SatMode implements Mode<Integer> {
     public Integer getFromInt(int value) {
         return value;
     }
+    @Override
+    public Integer getFromString(String value) {
+        return Integer.parseInt(value);
+    }
 
     @Override
     public Integer multiply(Integer v1, Integer v2) {
@@ -84,4 +88,5 @@ public class SatMode implements Mode<Integer> {
     public Integer count(Integer v1) {
         return Integer.bitCount(v1);
     }
+
 }
