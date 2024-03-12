@@ -1,6 +1,5 @@
 package expression.generic;
 
-import expression.Priority;
 import expression.exceptions.EvaluateException;
 import expression.exceptions.ParsingException;
 import expression.generic.operations.BinaryOperation;
@@ -12,13 +11,13 @@ import expression.generic.type.*;
 import java.util.Map;
 
 public class GenericTabulator implements Tabulator {
-     static Map<String, Mode<? extends Number>> modes = Map.of(
+    private final static Map<String, Mode<? extends Number>> MODES = Map.of(
             "i", new CheckedIntegerMode(),
             "d", new DoubleMode(),
             "bi", new BigIntegerMode(),
-             "u", new IntegerMode(),
-             "b", new ByteMode(),
-             "sat", new SatMode()
+            "u", new IntegerMode(),
+            "b", new ByteMode(),
+            "sat", new SatMode()
     );
 
     public static void main(String[] args) throws ParsingException {
@@ -41,16 +40,16 @@ public class GenericTabulator implements Tabulator {
     }
 
 
-    public Number[][][] tabulate(String mode, String expression, int x1, int x2, int y1, int y2, int z1, int z2) 
+    public Number[][][] tabulate(String mode, String expression, int x1, int x2, int y1, int y2, int z1, int z2)
             throws ParsingException {
-        Mode<? extends Number> m = modes.get(mode);
+        Mode<? extends Number> m = MODES.get(mode);
         return tabulateImpl(m, expression, x1, x2, y1, y2, z1, z2);
     }
 
     private <T extends Number> Number[][][] tabulateImpl(Mode<T> mode, String expression,
-                                                     int x1, int x2,
-                                                     int y1, int y2,
-                                                     int z1, int z2) throws ParsingException {
+                                                         int x1, int x2,
+                                                         int y1, int y2,
+                                                         int z1, int z2) throws ParsingException {
         Expression<T> expr = getExpression(expression);
         Number[][][] result = new Number[x2 - x1 + 1][y2 - y1 + 1][z2 - z1 + 1];
 
