@@ -58,6 +58,6 @@ public interface Queue {
 
     // :NOTE: contract
     // Pre: true
-    // Post: R = I, I.index = 0
+    // Post: R = I[1..n], I.index = 0, immutable(n)
     Iterator<Object> iterator();
 }

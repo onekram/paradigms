@@ -3,6 +3,7 @@ package queue;
 
 import java.util.Arrays;
 import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
 
 // Model: a[1..n]
 // Inv: n >= 0 && for i=1..n: a[i] != null
@@ -99,13 +100,7 @@ public class ArrayQueueADT {
         assert queue != null;
         assert condition != null;
 
-        // :NOTE: performance
-        for (int i = queue.head, j = 0; j < queue.size; i = cycleInc(queue, i), j++) {
-            if (condition.test(queue.elements[i])) {
-                return j;
-            }
-        }
-        return -1;
+        return findIndex(queue, condition, true);
     }
 
     // Pre: queue != null && condition != null
@@ -115,14 +110,21 @@ public class ArrayQueueADT {
         assert queue != null;
         assert condition != null;
 
-        // :NOTE: copy-paste
-        int lastIndex = -1;
-        for (int i = queue.head, j = 0; j < queue.size; i = cycleInc(queue, i), j++) {
+        return findIndex(queue, condition, false);
+    }
+    private static int findIndex(ArrayQueueADT queue, Predicate<Object> condition, boolean firstIndex) {
+        UnaryOperator<Integer> operator = el -> cycleDec(queue, el);
+        int i = getPreTail(queue);
+        if (firstIndex) {
+            operator = el -> cycleInc(queue, el);
+            i = queue.head;
+        }
+        for (int j = 0; j < queue.size; i = operator.apply(i), j++) {
             if (condition.test(queue.elements[i])) {
-                lastIndex = j;
+                return firstIndex ?  j : queue.size - j - 1;
             }
         }
-        return lastIndex;
+        return -1;
     }
 
 

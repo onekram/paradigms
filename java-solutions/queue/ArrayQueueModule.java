@@ -3,6 +3,7 @@ package queue;
 
 import java.util.Arrays;
 import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
 
 // Model: a[1..n]
 // Inv: n >= 0 && for i=1..n: a[i] != null
@@ -84,29 +85,37 @@ public class ArrayQueueModule {
         return element;
     }
 
-    // Pre: true
+    // Pre: condition != null
     // el = min(A) then ∀x in A x >= el
     // Post: R: R = i: i = min({el: condition(a[el]) == true}) if exists i: condition(a[i]) == true, R = -1 otherwise
     public static int indexIf(Predicate<Object> condition) {
-        for (int i = head, j = 0; j < size; i = cycleInc(i), j++) {
-            if (condition.test(elements[i])) {
-                return j;
-            }
-        }
-        return -1;
+        assert condition != null;
+
+        return findIndex(condition, true);
     }
 
-    // Pre: true
+    // Pre: condition != null
     // el = max(A) then ∀x in A x <= el
     // Post: R: R = i: i = max({el: condition(a[el]) == true}) if exists i: condition(a[i]) == true, R = -1 otherwise
     public static int lastIndexIf(Predicate<Object> condition) {
-        int lastIndex = -1;
-        for (int i = head, j = 0; j < size; i = cycleInc(i), j++) {
+        assert condition != null;
+
+        return findIndex(condition, false);
+    }
+
+    private static int findIndex(Predicate<Object> condition, boolean firstIndex) {
+        UnaryOperator<Integer> operator = ArrayQueueModule::cycleDec;
+        int i = getPreTail();
+        if (firstIndex) {
+            operator = ArrayQueueModule::cycleInc;
+            i = head;
+        }
+        for (int j = 0; j < size; i = operator.apply(i), j++) {
             if (condition.test(elements[i])) {
-                lastIndex = j;
+                return firstIndex ?  j : size - j - 1;
             }
         }
-        return lastIndex;
+        return -1;
     }
 
     // Pre: n > 0
@@ -165,12 +174,18 @@ public class ArrayQueueModule {
     // Pre: true
     // Post: true
     private static int cycleInc(int value) {
-        return (value + 1) % elements.length;
+        if (value + 1 >= elements.length) {
+            return value + 1 - elements.length;
+        }
+        return value + 1;
     }
 
     // Pre: true
     // Post: true
     private static int cycleDec(int value) {
-        return (elements.length + value - 1) % elements.length;
+        if (elements.length + value - 1 >= elements.length) {
+            return elements.length + value - 1 - elements.length;
+        }
+        return elements.length + value - 1;
     }
 }

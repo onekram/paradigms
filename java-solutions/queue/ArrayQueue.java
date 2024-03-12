@@ -159,6 +159,7 @@ public class ArrayQueue extends AbstractQueue {
     }
 
     private class Itr implements Iterator<Object> {
+        // Model: I, I[1..n], immutable(n)
         int index;
         int step;
 
@@ -174,7 +175,7 @@ public class ArrayQueue extends AbstractQueue {
         }
 
         // Pre: true
-        // Post: R = a[index'], index' = index + 1;
+        // Post: R = a[I.index'], index' = index + 1;
         @Override
         public Object next() {
             Object value = elements[index];

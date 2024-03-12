@@ -74,6 +74,7 @@ import java.util.Iterator;
         }
 
     private class Itr implements Iterator<Object> {
+        // Model: I, I[1..n], immutable(n)
 
         private Node currentNode;
         Itr() {
@@ -87,10 +88,12 @@ import java.util.Iterator;
             return currentNode != null;
         }
 
-        // Pre: true
+        // Pre: I.index < n
         // Post: R = a[index'], index' = index + 1;
         @Override
         public Object next() {
+            assert currentNode != null;
+
             Object value = currentNode.value;
             currentNode = currentNode.next;
             return value;
