@@ -19,9 +19,11 @@ let subtract = getOperation((a, b) => a - b);
 let multiply = getOperation((a, b) => a * b);
 let divide = getOperation((a, b) => a / b);
 let negate = getOperation((a) => -a);
-let max3 = getOperation(Math.max, 3);
-let min5 = getOperation(Math.min, 5);
-
+let avg5 = getOperation((...args) => (args.reduce((init, arg) => init + arg, 0)) / args.length, 5)
+let med3 = getOperation(
+    (...args) => (args.sort((arg1, arg2) => arg1 - arg2))[1],
+    3
+)
 
 let pi = cnst(Math.PI)
 let e = cnst(Math.E)
@@ -44,8 +46,8 @@ let operations = {
     '*': multiply,
     '/': divide,
     'negate': negate,
-    'min5': min5,
-    'max3' : max3
+    'avg5' : avg5,
+    'med3' : med3
 };
 function test() {
     let expr = add(
