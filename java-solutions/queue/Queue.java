@@ -38,25 +38,23 @@ public interface Queue {
     void clear();
 
 
-    // :NOTE: v -> [null]
     // Pre: function != null
-    // function: Object -> List<Object>;
-    // Let: ∀ i: 1 < i < n: function(a[i]) = Fi[1..Ki]
+    // :NOTE: Ki?
+    // Let: Fi[1..Ki] = function(a[i]) for i: 1 < i < n:
     // ∀ el: 1 < el < Ki: Fi[el] != null
     // Post: R = r[1..∑(i = 1 to n)Ki]
-    // :NOTE: p?
     // for p = 1..n: ∀ index: ∑(i = 1 to p-1)Ki < index <= ∑(i = 1 to p)Ki (K0 = 0):
+    // :NOTE: overlapping? undefined?
     // r[index] = Fp[index - ∑(i = 1 to p-1)Ki]
     Queue flatMap(Function<Object, List<Object>> function);
 
-    // :NOTE: init != null
+    // :NOTE: [].reduce()
     // Pre: op != null
     // Post: R = Jn,
     // Let: J1 = op(init, a[1])
     //      Jn = op(J{n-1}, a[n]), n > 1
     Object reduce(Object init, BinaryOperator<Object> op);
 
-    // :NOTE: contract
     // Pre: true
     // Post: R = I[1..n], I.index = 0, immutable(n)
     Iterator<Object> iterator();

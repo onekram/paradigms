@@ -158,6 +158,7 @@ public class ArrayQueue extends AbstractQueue {
         return new ArrayQueue();
     }
 
+    // :NOTE: returns nulls
     private class Itr implements Iterator<Object> {
         // Model: I, I[1..n], immutable(n)
         int index;
@@ -167,6 +168,7 @@ public class ArrayQueue extends AbstractQueue {
             index = head;
             step = 0;
         }
+
         // Pre: true
         // Post: I.index < n;
         @Override
@@ -183,6 +185,5 @@ public class ArrayQueue extends AbstractQueue {
             step++;
             return value;
         }
-
     }
 }
