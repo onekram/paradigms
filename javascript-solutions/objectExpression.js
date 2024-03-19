@@ -14,7 +14,6 @@ const operations = {};
 function CreateOperation(impl, sign, diff) {
     const operation = function(...args) {
         Operation.call(this, ...args);
-        Operation.prototype.args = args;
     }
     operation.prototype = Object.create(Operation.prototype);
     operation.prototype.impl = impl;
