@@ -7,111 +7,87 @@ Operation.prototype.toString = function() {
     return `${this.args.map((el) => el.toString()).join(' ')} ${this.sign}`;
 }
 Operation.prototype.evaluate = function(...v) {
-    return this.evaluateImpl(...this.args.map((el) => el.evaluate(...v)));
+    return this.impl(...this.args.map((el) => el.evaluate(...v)));
+}
+function CreateOperation(impl, sign, diff) {
+    const operation = function(...args) {
+        Operation.call(this, ...args);
+        Operation.prototype.args = args;
+    }
+    operation.prototype = Object.create(Operation.prototype);
+    operation.prototype.impl = impl;
+    operation.prototype.sign = sign;
+    operation.prototype.count = impl.length;
+    operation.prototype.diff = diff;
+
+    return operation;
 }
 
-function Negate(arg) {
-    Operation.call(this, arg);
-    this.sign = 'negate';
-    this.evaluateImpl = function(v) {
-        return -v;
-    }
-    this.diff = function(v) {
-        return new Negate(arg.diff(v));
-    }
-}
-Negate.prototype = Object.create(Operation.prototype);
+const Negate = CreateOperation(
+    (v1) => -v1,
+    'negate',
+    function(v) { return new Negate(this.args[0].diff(v));}
+);
+// dump(new Negate(new Const(1)))
 
-function Add(left, right) {
-    Operation.call(this, left, right);
-    this.sign = '+';
-    this.evaluateImpl = function(v1, v2) {
-        return v1 + v2;
-    }
-    this.diff = function(v) {
-        return new Add(left.diff(v), right.diff(v));
-    }
-}
-Add.prototype = Object.create(Operation.prototype);
+const Add = CreateOperation(
+    (v1, v2) => v1 + v2,
+    '+',
+    function(v) { return new Add(this.args[0].diff(v), this.args[1].diff(v));}
+);
+const Subtract = CreateOperation(
+    (v1, v2) => v1 - v2,
+    '-',
+    function(v) { return new Subtract(this.args[0].diff(v), this.args[1].diff(v));}
+);
 
-function Subtract(left, right) {
-    Operation.call(this, left, right);
-    this.sign = '-';
-    this.evaluateImpl = function(v1, v2) {
-        return v1 - v2;
+const Multiply = CreateOperation(
+    (v1, v2) => v1 * v2,
+    '*',
+    function(v) {
+        return new Add(new Multiply(this.args[0].diff(v), this.args[1]), new Multiply(this.args[1].diff(v), this.args[0]));
     }
-    this.diff = function(v) {
-        return new Subtract(left.diff(v), right.diff(v));
-    }
-}
-Subtract.prototype = Object.create(Operation.prototype);
+);
 
-function Multiply(left, right) {
-    Operation.call(this, left, right);
-    this.sign = '*';
-    this.evaluateImpl = function(v1, v2) {
-        return v1 * v2;
-    }
-    this.diff = function(v) {
-        return new Add(new Multiply(left.diff(v), right), new Multiply(right.diff(v), left));
-    }
-}
-Multiply.prototype = Object.create(Operation.prototype);
-
-function Divide(left, right) {
-    Operation.call(this, left, right);
-    this.sign = '/';
-    this.evaluateImpl = function(v1, v2) {
-        return v1 / v2;
-    }
-    this.diff = function(v) {
+const Divide = CreateOperation(
+    (v1, v2) => v1 / v2,
+    '/',
+    function(v) {
         return new Divide(
             new Subtract(
-                new Multiply(left.diff(v), right),
-                new Multiply(right.diff(v), left)
+                new Multiply(this.args[0].diff(v), this.args[1]),
+                new Multiply(this.args[1].diff(v), this.args[0])
             ),
-            new Multiply(right, right)
+            new Multiply(this.args[1], this.args[1])
         );
     }
-}
-Divide.prototype = Object.create(Operation.prototype);
+);
 
-function Hypot(left, right) {
-    Operation.call(this, left, right);
-    this.sign = 'hypot';
-    this.evaluateImpl = function(v1, v2) {
-        return v1 * v1 + v2 * v2;
-    }
-    this.diff = function(v) {
+
+const Hypot = CreateOperation(
+    (v1, v2) => v1 * v1 + v2 * v2,
+    'hypot',
+    function(v) {
         return new Add(
-            new Multiply(left, left).diff(v),
-            new Multiply(right, right).diff(v)
+            new Multiply(this.args[0], this.args[0]).diff(v),
+            new Multiply(this.args[1], this.args[1]).diff(v)
         );
     }
-}
+);
 
-Hypot.prototype = Object.create(Operation.prototype);
-
-function HMean(left, right) {
-    Operation.call(this, left, right);
-    this.sign = 'hmean';
-    this.evaluateImpl = function(v1, v2) {
-        return 2 / (1 / v1 + 1 / v2);
-    }
-
-    this.diff = function(v) {
+const HMean = CreateOperation(
+    (v1, v2) => 2 / (1 / v1 + 1 / v2),
+    'hmean',
+    function(v) {
         return new Divide(
             new Const(2),
             new Add(
-                new Divide(new Const(1), left),
-                new Divide(new Const(1), right)
+                new Divide(Const.ONE, this.args[0]),
+                new Divide(Const.ONE, this.args[1])
             )
         ).diff(v);
     }
-}
-
-HMean.prototype = Object.create(Operation.prototype);
-
+);
 function Const(value) {
     this.evaluate = function (_) {
         return value;
@@ -120,7 +96,7 @@ function Const(value) {
         return value.toString();
     }
     this.diff = function(v) {
-        return new Const(0);
+        return Const.ZERO;
     }
 }
 
@@ -138,9 +114,12 @@ function Variable(name) {
         return name;
     }
     this.diff = function(v) {
-        return v === name ? new Const(1) : new Const(0);
+        return v === name ? Const.ONE : Const.ZERO;
     }
 }
+
+Const.ZERO = new Const(0);
+Const.ONE = new Const(1);
 
 let cnsts = {
     'pi' : new Const(Math.PI),
@@ -162,9 +141,10 @@ function dump(obj) {
     }
 }
 function test() {
-    let expr = new HMean(new Const(2), new Const(3)).diff('x');
-    console.log(expr.toString());
-    console.log(expr.evaluate(2, 2, 2));
+    // let expr = new Add(new Variable('x'), new Const(2))
+    let expr = parse('x negate');
+
+    console.log(expr.diff('x').evaluate(0, 0, 0 ));
 }
 
 function parse(expression) {
@@ -174,7 +154,7 @@ function parse(expression) {
     while (!(el = tokens.next()).done) {
         if (el.value in operations) {
             let op = operations[el.value];
-            stack.push(new op(...stack.splice(-op.length)));
+            stack.push(new op(...stack.splice(-op.prototype.count)));
         } else if (el.value in variables) {
             stack.push(new Variable(el.value));
         } else if (el.value in cnsts) {
@@ -187,3 +167,4 @@ function parse(expression) {
     }
     return stack.pop()
 }
+test()
