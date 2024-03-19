@@ -9,6 +9,8 @@ Operation.prototype.toString = function() {
 Operation.prototype.evaluate = function(...v) {
     return this.impl(...this.args.map((el) => el.evaluate(...v)));
 }
+
+const operations = {};
 function CreateOperation(impl, sign, diff) {
     const operation = function(...args) {
         Operation.call(this, ...args);
@@ -19,7 +21,7 @@ function CreateOperation(impl, sign, diff) {
     operation.prototype.sign = sign;
     operation.prototype.count = impl.length;
     operation.prototype.diff = diff;
-
+    operations[sign] = operation;
     return operation;
 }
 
@@ -28,7 +30,6 @@ const Negate = CreateOperation(
     'negate',
     function(v) { return new Negate(this.args[0].diff(v));}
 );
-// dump(new Negate(new Const(1)))
 
 const Add = CreateOperation(
     (v1, v2) => v1 + v2,
@@ -62,7 +63,6 @@ const Divide = CreateOperation(
         );
     }
 );
-
 
 const Hypot = CreateOperation(
     (v1, v2) => v1 * v1 + v2 * v2,
@@ -126,24 +126,13 @@ let cnsts = {
     'e' : new Const(Math.E)
 }
 
-let operations = {
-    '+': Add,
-    '-': Subtract,
-    '*': Multiply,
-    '/': Divide,
-    'negate': Negate,
-    'hypot' : Hypot,
-    'hmean' : HMean
-};
 function dump(obj) {
     for (const name in obj) {
         console.log(name + ': ' + obj[name]);
     }
 }
 function test() {
-    // let expr = new Add(new Variable('x'), new Const(2))
     let expr = parse('x negate');
-
     console.log(expr.diff('x').evaluate(0, 0, 0 ));
 }
 
@@ -167,4 +156,3 @@ function parse(expression) {
     }
     return stack.pop()
 }
-test()
