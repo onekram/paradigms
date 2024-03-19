@@ -20,6 +20,10 @@ paradigms.iml
 /java-solutions/**/*Tester.java
 /java-solutions/**/*Test.java
 /java-solutions/**/*TestSet.java
+/javascript-solutions/*test.js
+/javascript-solutions/*Test.js
+
+
 
 # Package info files
 /java-solutions/**/package-info.java
