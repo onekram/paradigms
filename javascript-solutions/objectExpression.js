@@ -76,6 +76,42 @@ function Divide(left, right) {
 }
 Divide.prototype = Object.create(Operation.prototype);
 
+function Hypot(left, right) {
+    Operation.call(this, left, right);
+    this.sign = 'hypot';
+    this.evaluateImpl = function(v1, v2) {
+        return v1 * v1 + v2 * v2;
+    }
+    this.diff = function(v) {
+        return new Add(
+            new Multiply(left, left).diff(v),
+            new Multiply(right, right).diff(v)
+        );
+    }
+}
+
+Hypot.prototype = Object.create(Operation.prototype);
+
+function HMean(left, right) {
+    Operation.call(this, left, right);
+    this.sign = 'hmean';
+    this.evaluateImpl = function(v1, v2) {
+        return 2 / (1 / v1 + 1 / v2);
+    }
+
+    this.diff = function(v) {
+        return new Divide(
+            new Const(2),
+            new Add(
+                new Divide(new Const(1), left),
+                new Divide(new Const(1), right)
+            )
+        ).diff(v);
+    }
+}
+
+HMean.prototype = Object.create(Operation.prototype);
+
 function Const(value) {
     this.evaluate = function (_) {
         return value;
@@ -116,7 +152,9 @@ let operations = {
     '-': Subtract,
     '*': Multiply,
     '/': Divide,
-    'negate': Negate
+    'negate': Negate,
+    'hypot' : Hypot,
+    'hmean' : HMean
 };
 function dump(obj) {
     for (const name in obj) {
@@ -124,8 +162,9 @@ function dump(obj) {
     }
 }
 function test() {
-    let expr = new Add(new Variable('x'), new Const(1));
-    let diff = expr.diff('x');
+    let expr = new HMean(new Const(2), new Const(3)).diff('x');
+    console.log(expr.toString());
+    console.log(expr.evaluate(2, 2, 2));
 }
 
 function parse(expression) {
@@ -148,4 +187,3 @@ function parse(expression) {
     }
     return stack.pop()
 }
-// test()
