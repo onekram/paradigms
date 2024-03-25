@@ -10,6 +10,10 @@ Operation.prototype.evaluate = function(...v) {
     return this.impl(...this.args.map((el) => el.evaluate(...v)));
 }
 
+Operation.prototype.prefix = function() {
+    return `(${this.sign} ${this.args.map((el) => el.prefix()).join(' ')})`;
+}
+
 const operations = {};
 function CreateOperation(impl, sign, diff) {
     const operation = function(...args) {
@@ -94,6 +98,9 @@ function Const(value) {
     this.toString = function() {
         return value.toString();
     }
+    this.prefix = function() {
+        return this.toString();
+    }
     this.diff = function(v) {
         return Const.ZERO;
     }
@@ -111,6 +118,9 @@ function Variable(name) {
     }
     this.toString = function() {
         return name;
+    }
+    this.prefix = function() {
+        return this.toString();
     }
     this.diff = function(v) {
         return v === name ? Const.ONE : Const.ZERO;
@@ -130,10 +140,7 @@ function dump(obj) {
         console.log(name + ': ' + obj[name]);
     }
 }
-function test() {
-    let expr = parse('x negate');
-    console.log(expr.diff('x').evaluate(0, 0, 0 ));
-}
+
 
 function parse(expression) {
     let tokens = expression.trim().split(/\s+/)[Symbol.iterator]();
@@ -154,4 +161,84 @@ function parse(expression) {
         }
     }
     return stack.pop()
+}
+class ParsingError extends Error {
+    constructor(message) {
+        super(message);
+        this.name = 'ParsingError';
+    }
+}
+class UnknownTokenError extends ParsingError {
+    constructor(token, pos) {
+        super(`Unknown token '${token}', at the position ${pos}`);
+    }
+}
+
+class UnexpectedTokenError extends ParsingError {
+    constructor(unexpected, pos, expected) {
+        super(
+            `Unexpected '${unexpected}'` +
+            (pos ? ` at the position ${pos}` : '') +
+            (expected ? ` (Expected '${expected}')` : '')
+        );
+    }
+}
+
+function parsePrefix(expression) {
+    let tokens = expression.trim()
+        .split(/\s+|(?=[()])|(?<=[()])/)
+        .reverse();
+    let stack = [];
+    let len = tokens.length;
+    let balance = 0;
+    let i = 0;
+    for (; i < len; i++) {
+        if (tokens[i] === ')') {
+            balance++;
+        } else if (tokens[i] === '(') {
+            balance--;
+        } else if (tokens[i] in operations) {
+            let op = operations[tokens[i]];
+            let arr = (stack.splice(-op.prototype.count)).reverse();
+            if (op.prototype.count !== arr.length) {
+                throw new UnexpectedTokenError(
+                    'end of operands',
+                    i + arr.length,
+                    `more operands for '${op.prototype.sign}'`)
+            }
+            stack.push(new op(...arr));
+        } else if (tokens[i] in variables) {
+            stack.push(new Variable(tokens[i]));
+        } else if (tokens[i] in cnsts) {
+            stack.push(cnsts[tokens[i]]);
+        } else if (!isNaN(Number(tokens[i]))) {
+            stack.push(new Const(Number(tokens[i])));
+        } else {
+            throw new UnknownTokenError(tokens[i], len - i);
+        }
+
+        if (balance < 0) {
+            throw new UnexpectedTokenError('(', len - i);
+        }
+    }
+    if (balance > 0) {
+        throw new UnexpectedTokenError(')', i, );
+    }
+    if (stack.length !== 1) {
+        throw new UnexpectedTokenError('end of expression', 0, 'operation');
+    }
+    return stack.pop();
+}
+
+function test() {
+
+    try {
+        let expr = parsePrefix('10');
+        console.log(expr.evaluate(10, 10 , 10));
+        console.log(expr.toString());
+    } catch (ex) {
+        console.log(ex.name);
+        console.log(ex.message);
+        console.log(ex);
+    }
 }
