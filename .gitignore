@@ -60,3 +60,6 @@ paradigms.iml
 
 # Javascript test directory
 /javascript
+
+# Clojure test directory
+/clojure
