@@ -14,6 +14,10 @@ Operation.prototype.prefix = function() {
     return `(${this.sign} ${this.args.map((el) => el.prefix()).join(' ')})`;
 }
 
+Operation.prototype.postfix = function() {
+    return `(${this.args.map((el) => el.prefix()).join(' ')} ${this.sign})`;
+}
+
 const operations = {};
 function CreateOperation(impl, sign, diff) {
     const operation = function(...args) {
@@ -91,6 +95,63 @@ const HMean = CreateOperation(
         ).diff(v);
     }
 );
+
+const ArithMean = CreateOperation(
+    (...args) => (args.reduce((init, arg) => init + arg, 0)) / args.length,
+    'arithMean',
+    function(v) {
+        return new Divide(
+            this.args.reduce((init, arg) => new Add(init, arg)),
+            new Const(this.args.length)
+        ).diff(v);
+    }
+);
+
+const GeomMean = CreateOperation(
+    (...args) => {
+        return Math.pow(Math.abs(args.reduce((init, arg) => init * arg, 1)), 1/args.length);
+    },
+    'geomMean',
+    function(v) {
+        let multiply = this.args.reduce((init, arg) => new Multiply(init, arg));
+        return new Divide(
+            new Multiply(
+                multiply.diff(v),
+                new GeomMean(...this.args)
+            ),
+            new Multiply(
+                new Const(this.args.length),
+                multiply
+            )
+        );
+    }
+);
+
+const HarmMean = CreateOperation(
+    (...args) => args.length / (args.reduce((init, arg) => init + 1 / arg, 0)),
+    'harmMean',
+    function(v) {
+        let sumInverse = this.args.reduce(
+            (init, arg) => new Add(
+                init,
+                new Divide(new Const(1), arg)
+            ),
+            new Const(0)
+        );
+        return new Negate(
+            new Divide(
+                new Multiply(
+                    sumInverse.diff(v),
+                    new Const(this.args.length)
+                ),
+                new Multiply(
+                    sumInverse,
+                    sumInverse
+                )
+            )
+        );
+    }
+);
 function Const(value) {
     this.evaluate = function (_) {
         return value;
@@ -98,9 +159,10 @@ function Const(value) {
     this.toString = function() {
         return value.toString();
     }
-    this.prefix = function() {
-        return this.toString();
-    }
+    this.prefix = this.toString;
+
+    this.postfix = this.toString;
+
     this.diff = function(v) {
         return Const.ZERO;
     }
@@ -119,9 +181,11 @@ function Variable(name) {
     this.toString = function() {
         return name;
     }
-    this.prefix = function() {
-        return this.toString();
-    }
+
+    this.prefix = this.toString;
+
+    this.postfix = this.toString;
+
     this.diff = function(v) {
         return v === name ? Const.ONE : Const.ZERO;
     }
@@ -183,59 +247,115 @@ class UnexpectedTokenError extends ParsingError {
         );
     }
 }
+class Parser {
+    #tokens = [];
+    #index = 0;
+    #open = '(';
+    #close = ')';
+    #prefix = true;
+
+    constructor(expression, prefix = true) {
+        this.#prefix = prefix;
+        this.#tokens = prefix ? this.#makeTokens(expression) : this.#makeTokens(expression).reverse();
+        if (!prefix) {
+            [this.#open, this.#close] = [this.#close, this.#open];
+        }
+    }
+
+    #makeTokens(expression) {
+        return expression.trim().split(/\s+|(?=[()])|(?<=[()])/);
+    }
+
+    parse() {
+        let ex = this.#factor();
+        if (!this.#isEnd()) {
+            throw new UnexpectedTokenError(this.#cur(), this.#realIndex());
+        }
+        return ex;
+    }
+
+    #isEnd() {
+        return this.#index >= this.#tokens.length;
+    }
+    #next() {
+        return this.#tokens[this.#index++];
+    }
+
+    #cur() {
+        return this.#isEnd() ? 'end of expression' : this.#tokens[this.#index];
+    }
+
+    #realIndex() {
+        return this.#prefix ? this.#index : this.#tokens.length - this.#index + 1;
+    }
+    #generateOp(op, count) {
+        let cond;
+        let i = 0;
+        let args = [];
+        if (count === 0) {
+            cond = () => this.#cur() !== this.#close && !this.#isEnd();
+        } else {
+            cond = () => i++ < count;
+        }
+        while (cond()){
+            args.push(this.#factor());
+        }
+        if (!this.#prefix) {
+            return new op(...args.reverse());
+        }
+        return new op(...args);
+    }
+
+    #expression() {
+        let tk = this.#cur();
+        if (tk in variables || !isNaN(Number(tk))) {
+            return this.#factor();
+        }
+
+        let op = operations[this.#next()];
+        if (op === undefined) {
+            throw new UnknownTokenError(tk, this.#realIndex());
+        }
+        return this.#generateOp(op, op.prototype.count);
+    }
+    #factor() {
+        if(this.#cur() === this.#open) {
+            this.#next();
+            let result = this.#expression();
+            if (this.#cur() !== this.#close) {
+                throw new UnexpectedTokenError(this.#cur(), this.#realIndex(), this.#close);
+            }
+            this.#next();
+            return result;
+        }
+        if (this.#isEnd()) {
+            throw new UnexpectedTokenError('end of expression');
+        }
+        let tk = this.#next();
+        if (tk in variables) {
+            return new Variable(tk);
+        } else if (tk in cnsts) {
+            return cnsts[tk];
+        } else if (tk.length > 0 && !isNaN(Number(tk))) {
+            return new Const(Number(tk));
+        } else {
+            throw new UnexpectedTokenError(tk, this.#realIndex(), "const or var");
+        }
+    }
+}
 
 function parsePrefix(expression) {
-    let tokens = expression.trim()
-        .split(/\s+|(?=[()])|(?<=[()])/)
-        .reverse();
-    let stack = [];
-    let len = tokens.length;
-    let balance = 0;
-    let i = 0;
-    for (; i < len; i++) {
-        if (tokens[i] === ')') {
-            balance++;
-        } else if (tokens[i] === '(') {
-            balance--;
-        } else if (tokens[i] in operations) {
-            let op = operations[tokens[i]];
-            let arr = (stack.splice(-op.prototype.count)).reverse();
-            if (op.prototype.count !== arr.length) {
-                throw new UnexpectedTokenError(
-                    'end of operands',
-                    i + arr.length,
-                    `more operands for '${op.prototype.sign}'`)
-            }
-            stack.push(new op(...arr));
-        } else if (tokens[i] in variables) {
-            stack.push(new Variable(tokens[i]));
-        } else if (tokens[i] in cnsts) {
-            stack.push(cnsts[tokens[i]]);
-        } else if (!isNaN(Number(tokens[i]))) {
-            stack.push(new Const(Number(tokens[i])));
-        } else {
-            throw new UnknownTokenError(tokens[i], len - i);
-        }
+    return new Parser(expression, true).parse();
+}
 
-        if (balance < 0) {
-            throw new UnexpectedTokenError('(', len - i);
-        }
-    }
-    if (balance > 0) {
-        throw new UnexpectedTokenError(')', i, );
-    }
-    if (stack.length !== 1) {
-        throw new UnexpectedTokenError('end of expression', 0, 'operation');
-    }
-    return stack.pop();
+function parsePostfix(expression) {
+    return new Parser(expression, false).parse();
 }
 
 function test() {
-
     try {
-        let expr = parsePrefix('10');
-        console.log(expr.evaluate(10, 10 , 10));
-        console.log(expr.toString());
+        let expr1 = new HarmMean(new Variable('x'), new Const(2));
+        console.log(expr1.diff('x').evaluate(2,2,2));
     } catch (ex) {
         console.log(ex.name);
         console.log(ex.message);
