@@ -307,12 +307,8 @@ class Parser {
     }
 
     #expression() {
-        let tk = this.#cur();
-        if (tk in variables || !isNaN(Number(tk))) {
-            return this.#factor();
-        }
-
-        let op = operations[this.#next()];
+        let tk = this.#next();
+        let op = operations[tk];
         if (op === undefined) {
             throw new UnknownTokenError(tk, this.#realIndex());
         }
@@ -354,8 +350,8 @@ function parsePostfix(expression) {
 
 function test() {
     try {
-        let expr1 = new HarmMean(new Variable('x'), new Const(2));
-        console.log(expr1.diff('x').evaluate(2,2,2));
+        let expr1 = parsePostfix('(x)');
+        console.log(expr1.toString());
     } catch (ex) {
         console.log(ex.name);
         console.log(ex.message);
