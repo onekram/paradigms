@@ -15,7 +15,7 @@ Operation.prototype.prefix = function() {
 }
 
 Operation.prototype.postfix = function() {
-    return `(${this.args.map((el) => el.prefix()).join(' ')} ${this.sign})`;
+    return `(${this.args.map((el) => el.postfix()).join(' ')} ${this.sign})`;
 }
 
 const operations = {};
@@ -350,11 +350,12 @@ function parsePostfix(expression) {
 
 function test() {
     try {
-        let expr1 = parsePostfix('(x)');
-        console.log(expr1.toString());
+        let expr1 = parsePrefix('( / (negate x) 2)');
+        console.log(expr1.postfix());
     } catch (ex) {
         console.log(ex.name);
         console.log(ex.message);
         console.log(ex);
     }
 }
+test()
