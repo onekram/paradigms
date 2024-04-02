@@ -3,24 +3,26 @@
 function Operation(...args) {
     this.args = args;
 }
-Operation.prototype.toString = function() {
+
+Operation.prototype.toString = function () {
     return `${this.args.map((el) => el.toString()).join(' ')} ${this.sign}`;
 }
-Operation.prototype.evaluate = function(...v) {
+Operation.prototype.evaluate = function (...v) {
     return this.impl(...this.args.map((el) => el.evaluate(...v)));
 }
 
-Operation.prototype.prefix = function() {
+Operation.prototype.prefix = function () {
     return `(${this.sign} ${this.args.map((el) => el.prefix()).join(' ')})`;
 }
 
-Operation.prototype.postfix = function() {
+Operation.prototype.postfix = function () {
     return `(${this.args.map((el) => el.postfix()).join(' ')} ${this.sign})`;
 }
 
 const operations = {};
+
 function CreateOperation(impl, sign, diff) {
-    const operation = function(...args) {
+    const operation = function (...args) {
         Operation.call(this, ...args);
     }
     operation.prototype = Object.create(Operation.prototype);
@@ -35,24 +37,30 @@ function CreateOperation(impl, sign, diff) {
 const Negate = CreateOperation(
     (v1) => -v1,
     'negate',
-    function(v) { return new Negate(this.args[0].diff(v));}
+    function (v) {
+        return new Negate(this.args[0].diff(v));
+    }
 );
 
 const Add = CreateOperation(
     (v1, v2) => v1 + v2,
     '+',
-    function(v) { return new Add(this.args[0].diff(v), this.args[1].diff(v));}
+    function (v) {
+        return new Add(this.args[0].diff(v), this.args[1].diff(v));
+    }
 );
 const Subtract = CreateOperation(
     (v1, v2) => v1 - v2,
     '-',
-    function(v) { return new Subtract(this.args[0].diff(v), this.args[1].diff(v));}
+    function (v) {
+        return new Subtract(this.args[0].diff(v), this.args[1].diff(v));
+    }
 );
 
 const Multiply = CreateOperation(
     (v1, v2) => v1 * v2,
     '*',
-    function(v) {
+    function (v) {
         return new Add(new Multiply(this.args[0].diff(v), this.args[1]), new Multiply(this.args[1].diff(v), this.args[0]));
     }
 );
@@ -60,7 +68,7 @@ const Multiply = CreateOperation(
 const Divide = CreateOperation(
     (v1, v2) => v1 / v2,
     '/',
-    function(v) {
+    function (v) {
         return new Divide(
             new Subtract(
                 new Multiply(this.args[0].diff(v), this.args[1]),
@@ -74,7 +82,7 @@ const Divide = CreateOperation(
 const Hypot = CreateOperation(
     (v1, v2) => v1 * v1 + v2 * v2,
     'hypot',
-    function(v) {
+    function (v) {
         return new Add(
             new Multiply(this.args[0], this.args[0]).diff(v),
             new Multiply(this.args[1], this.args[1]).diff(v)
@@ -85,7 +93,7 @@ const Hypot = CreateOperation(
 const HMean = CreateOperation(
     (v1, v2) => 2 / (1 / v1 + 1 / v2),
     'hmean',
-    function(v) {
+    function (v) {
         return new Divide(
             new Const(2),
             new Add(
@@ -99,7 +107,7 @@ const HMean = CreateOperation(
 const ArithMean = CreateOperation(
     (...args) => (args.reduce((init, arg) => init + arg, 0)) / args.length,
     'arithMean',
-    function(v) {
+    function (v) {
         return new Divide(
             this.args.reduce((init, arg) => new Add(init, arg)),
             new Const(this.args.length)
@@ -109,10 +117,10 @@ const ArithMean = CreateOperation(
 
 const GeomMean = CreateOperation(
     (...args) => {
-        return Math.pow(Math.abs(args.reduce((init, arg) => init * arg, 1)), 1/args.length);
+        return Math.pow(Math.abs(args.reduce((init, arg) => init * arg, 1)), 1 / args.length);
     },
     'geomMean',
-    function(v) {
+    function (v) {
         let multiply = this.args.reduce((init, arg) => new Multiply(init, arg));
         return new Divide(
             new Multiply(
@@ -130,7 +138,7 @@ const GeomMean = CreateOperation(
 const HarmMean = CreateOperation(
     (...args) => args.length / (args.reduce((init, arg) => init + 1 / arg, 0)),
     'harmMean',
-    function(v) {
+    function (v) {
         let sumInverse = this.args.reduce(
             (init, arg) => new Add(
                 init,
@@ -152,18 +160,19 @@ const HarmMean = CreateOperation(
         );
     }
 );
+
 function Const(value) {
     this.evaluate = function (_) {
         return value;
     }
-    this.toString = function() {
+    this.toString = function () {
         return value.toString();
     }
     this.prefix = this.toString;
 
     this.postfix = this.toString;
 
-    this.diff = function(v) {
+    this.diff = function (v) {
         return Const.ZERO;
     }
 }
@@ -175,10 +184,10 @@ let variables = {
 };
 
 function Variable(name) {
-    this.evaluate = function(...v) {
+    this.evaluate = function (...v) {
         return v[variables[name]];
     }
-    this.toString = function() {
+    this.toString = function () {
         return name;
     }
 
@@ -186,7 +195,7 @@ function Variable(name) {
 
     this.postfix = this.toString;
 
-    this.diff = function(v) {
+    this.diff = function (v) {
         return v === name ? Const.ONE : Const.ZERO;
     }
 }
@@ -195,8 +204,8 @@ Const.ZERO = new Const(0);
 Const.ONE = new Const(1);
 
 let cnsts = {
-    'pi' : new Const(Math.PI),
-    'e' : new Const(Math.E)
+    'pi': new Const(Math.PI),
+    'e': new Const(Math.E)
 }
 
 function dump(obj) {
@@ -226,12 +235,14 @@ function parse(expression) {
     }
     return stack.pop()
 }
+
 class ParsingError extends Error {
     constructor(message) {
         super(message);
         this.name = 'ParsingError';
     }
 }
+
 class UnknownTokenError extends ParsingError {
     constructor(token, pos) {
         super(`Unknown token '${token}', at the position ${pos}`);
@@ -247,6 +258,7 @@ class UnexpectedTokenError extends ParsingError {
         );
     }
 }
+
 class Parser {
     #tokens = [];
     #index = 0;
@@ -277,6 +289,7 @@ class Parser {
     #isEnd() {
         return this.#index >= this.#tokens.length;
     }
+
     #next() {
         return this.#tokens[this.#index++];
     }
@@ -288,6 +301,7 @@ class Parser {
     #realIndex() {
         return this.#prefix ? this.#index : this.#tokens.length - this.#index + 1;
     }
+
     #generateOp(op, count) {
         let cond;
         let i = 0;
@@ -297,7 +311,7 @@ class Parser {
         } else {
             cond = () => i++ < count;
         }
-        while (cond()){
+        while (cond()) {
             args.push(this.#factor());
         }
         if (!this.#prefix) {
@@ -314,8 +328,9 @@ class Parser {
         }
         return this.#generateOp(op, op.prototype.count);
     }
+
     #factor() {
-        if(this.#cur() === this.#open) {
+        if (this.#cur() === this.#open) {
             this.#next();
             let result = this.#expression();
             if (this.#cur() !== this.#close) {
@@ -358,4 +373,5 @@ function test() {
         console.log(ex);
     }
 }
+
 test()
