@@ -89,7 +89,8 @@
 (defn v*s [v & s]
   {:pre [(and (v? v) (every? number? s))]
    :post [(v? %)]}
-  (mapv #(* % (apply * s)) v))
+  (let [product (apply * s)]
+    (mapv #(* % product) v)))
 (defn vect [& args]
   {:pre [(and (every? v? args) (every? #(== 3 (count %)) args))]
    :post [(and (v? %) (== 3 (count %)))]}
@@ -112,7 +113,8 @@
 (defn m*s [m & s]
   {:pre [(and (m? m) (every? number? s))]
    :post [(m? %)]}
-  (mapv #(v*s % (apply * s)) m))
+  (let [product (apply * s)]
+        (mapv #(v*s % product) m)))
 
 (defn m*v [m v]
   {:pre [(and (m? m) (v? v))]
