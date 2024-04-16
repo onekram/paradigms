@@ -8,8 +8,6 @@
 
 (defn variable [arg]
   (fn [m]
-    {:pre [(contains? m arg)]
-     :post [(number? %)]}
     (m arg)))
 
 (defn div
