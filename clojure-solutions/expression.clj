@@ -66,7 +66,9 @@
 ;  (assoc this
 ;    :args args))
 
+(def funcs {})
 (defn CreateOperation [impl sign diff]
+  ;(def funcs (assoc funcs (symbol sign) ))
   (let [op-proto (assoc OperationProto
              :impl impl
              :sign sign
@@ -74,15 +76,32 @@
         op-cons (fn [this & args] (assoc this :args args))]
     (constructor op-cons op-proto)))
 
-(defn Constant [value]
-  {:toString (fn [this] (str value)) ; :NOTE: отдельно добавить прототип
-    :evaluate (fn [this _] value)
-    :diff (fn [this _] (Constant 0))}) ; :NOTE: (Constant 0) -- constants
+(declare ZERO)
+(declare ONE)
 
-(defn Variable [name]
-   {:toString (fn [this] name) ; :NOTE: досттавать name из прототипвп
-    :evaluate (fn [this arg] (arg name))
-    :diff (fn [this arg] (if (= arg name) (Constant 1) (Constant 0)))})
+(def _value (field :value))
+(def ConstantProto
+  {:toString (fn [this] (str (_value this)))
+   :evaluate (fn [this _] (_value this))})
+
+(def VariableProto
+  {:toString (fn [this] (_value this))
+   :evaluate (fn [this arg] (arg (_value this)))})
+
+(defn ConstantCons [this value]
+  (assoc this
+    :value value
+    :diff (fn [this _] ZERO)))
+
+(defn VariableCons [this value]
+  (assoc this :value value
+              :diff (fn [this arg] (if (= arg (_value this)) ONE ZERO))))
+
+(def Constant (constructor ConstantCons ConstantProto))
+(def Variable (constructor VariableCons VariableProto))
+
+(def ZERO (Constant 0))
+(def ONE (Constant 1))
 
 (def Add
   (CreateOperation
@@ -146,7 +165,7 @@
   (CreateOperation
     harm-mean-impl
     "harmMean"
-    (fn [this arg] (let [sum-inverses (apply Add (map #(Divide (Constant 1) %) (_args this)))]
+    (fn [this arg] (let [sum-inverses (apply Add (map #(Divide ONE %) (_args this)))]
                      (Divide
                        (Negate (Multiply (diff sum-inverses arg) (Constant (count (_args this)))))
                        (Multiply sum-inverses sum-inverses))))))
