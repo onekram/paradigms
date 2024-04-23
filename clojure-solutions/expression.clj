@@ -39,10 +39,131 @@
    'geomMean  geomMean
    'harmMean harmMean})
 
-(defn parse-rec [arg]
-  (cond (number? arg) (constant arg)
-        (symbol? arg) (variable (str arg))
-        (list? arg) (apply (func-map (first arg)) (map parse-rec (rest arg)))))
+(defn parse-rec [funcs constant-func variable-func]
+  (letfn [(rec [arg]
+            (cond (number? arg) (constant-func arg)
+                  (symbol? arg) (variable-func (str arg))
+                  (list? arg) (apply (funcs (first arg)) (map rec (rest arg)))))]
+    #(rec (read-string %))))
 
-(defn parseFunction [expr]
-  (parse-rec (read-string expr)))
+(def parseFunction
+  (parse-rec func-map constant variable))
+
+(load-file "proto.clj")
+
+(def _sign (field :sign))
+(def _args (field :args))
+(def _impl (field :impl))
+(def toString (method :toString))
+(def evaluate (method :evaluate))
+(def diff (method :diff))
+
+(def OperationProto
+  {:toString (fn [this] (str "(" (_sign this) " " (clojure.string/join " " (map toString (_args this))) ")"))
+   :evaluate (fn [this arg] (apply (_impl this) (map #(evaluate % arg) (_args this))))})
+
+(defn OperationCons [this & args]
+  (assoc this
+    :args args))
+
+(defn CreateOperation [impl sign diff]
+  (let [op-proto (assoc OperationProto
+             :impl impl
+             :sign sign
+             :diff diff)
+        op-cons (fn [this & args] (apply OperationCons this args))]
+    (constructor op-cons op-proto)))
+
+(defn Constant [value]
+  {:toString (fn [this] (str value))
+    :evaluate (fn [this _] value)
+    :diff (fn [this _] (Constant 0))})
+
+(defn Variable [name]
+   {:toString (fn [this] name)
+    :evaluate (fn [this arg] (arg name))
+    :diff (fn [this arg] (if (= arg name) (Constant 1) (Constant 0)))})
+
+(def Add
+  (CreateOperation
+           +
+           "+"
+           (fn [this arg] (apply Add (map #(diff % arg) (_args this))))))
+(def Subtract
+  (CreateOperation
+    -
+    "-"
+    (fn [this arg] (apply Subtract (map #(diff % arg) (_args this))))))
+
+(def Multiply
+  (CreateOperation
+    *
+    "*"
+    (fn [this arg]
+      (cond
+        (== (count (_args this)) 1) (diff (first (_args this)) arg)
+        :else (Add (Multiply (diff (first (_args this)) arg) (apply Multiply (rest (_args this))))
+                   (Multiply (first (_args this)) (diff (apply Multiply (rest (_args this))) arg)))))
+      )
+    )
+(def Negate
+  (CreateOperation
+    (fn [arg] (- arg))
+    "negate"
+    (fn [this arg] (Negate (diff (first (_args this)) arg)))))
+(def Divide
+  (CreateOperation
+    div
+    "/"
+    (fn [this arg]
+      (cond (== (count (_args this)) 1) (Divide
+                                          (Negate (diff (first (_args this)) arg))
+                                          (Multiply (first (_args this)) (first (_args this))))
+            :else (Divide
+                    (Subtract
+                      (Multiply (diff (first (_args this)) arg) (apply Multiply (rest (_args this))))
+                      (Multiply (first (_args this)) (diff (apply Multiply (rest (_args this))) arg)))
+                    (Multiply (apply Multiply (rest (_args this))) (apply Multiply (rest (_args this)))))
+            )
+      )))
+
+(def ArithMean
+  (CreateOperation
+    arith-mean-impl
+    "arithMean"
+    (fn [this arg] (diff
+                     (Divide (apply Add (_args this)) (Constant (count (_args this))))
+                     arg))))
+(def GeomMean
+  (CreateOperation
+    geom-mean-impl
+    "geomMean"
+    (fn [this arg] (let [mult (apply Multiply (_args this))]
+                     (Divide
+                       (Multiply (diff mult arg) (apply GeomMean (_args this)))
+                       (Multiply (Constant (count (_args this))) mult))))))
+(def HarmMean
+  (CreateOperation
+    harm-mean-impl
+    "harmMean"
+    (fn [this arg] (let [sum-inverses (apply Add (map #(Divide (Constant 1) %) (_args this)))]
+                     (Divide
+                       (Negate (Multiply (diff sum-inverses arg) (Constant (count (_args this)))))
+                       (Multiply sum-inverses sum-inverses))))))
+
+(def obj-map
+  {'+         Add
+   '-         Subtract
+   '*         Multiply
+   '/         Divide
+   'negate    Negate
+   'arithMean ArithMean
+   'geomMean GeomMean
+   'harmMean HarmMean
+   })
+(def parseObject
+  (parse-rec obj-map Constant Variable))
+
+(def expr (Divide (Variable "x") (Variable "y") (Constant 2)))
+(def expr1 (diff expr "x"))
+(println (evaluate expr1 {"x" 1 "y" 100}))
