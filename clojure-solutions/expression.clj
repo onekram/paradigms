@@ -62,25 +62,25 @@
   {:toString (fn [this] (str "(" (_sign this) " " (clojure.string/join " " (map toString (_args this))) ")"))
    :evaluate (fn [this arg] (apply (_impl this) (map #(evaluate % arg) (_args this))))})
 
-(defn OperationCons [this & args]
-  (assoc this
-    :args args))
+;(defn OperationCons [this & args]
+;  (assoc this
+;    :args args))
 
 (defn CreateOperation [impl sign diff]
   (let [op-proto (assoc OperationProto
              :impl impl
              :sign sign
              :diff diff)
-        op-cons (fn [this & args] (apply OperationCons this args))]
+        op-cons (fn [this & args] (assoc this :args args))]
     (constructor op-cons op-proto)))
 
 (defn Constant [value]
-  {:toString (fn [this] (str value))
+  {:toString (fn [this] (str value)) ; :NOTE: отдельно добавить прототип
     :evaluate (fn [this _] value)
-    :diff (fn [this _] (Constant 0))})
+    :diff (fn [this _] (Constant 0))}) ; :NOTE: (Constant 0) -- constants
 
 (defn Variable [name]
-   {:toString (fn [this] name)
+   {:toString (fn [this] name) ; :NOTE: досттавать name из прототипвп
     :evaluate (fn [this arg] (arg name))
     :diff (fn [this arg] (if (= arg name) (Constant 1) (Constant 0)))})
 
@@ -88,7 +88,7 @@
   (CreateOperation
            +
            "+"
-           (fn [this arg] (apply Add (map #(diff % arg) (_args this))))))
+           (fn [this arg] (apply Add (map #(diff % arg) (_args this)))))) ; :NOTE:  (_args this) + diff на уровне Operation
 (def Subtract
   (CreateOperation
     -
