@@ -1,25 +1,18 @@
-Этот репозиторий склонирован для каждого студента и доступен по адресу
-`https://www.kgeorgiy.info/git-students/year2023/<USER>/paradigms`,
-где `<USER>` — имя пользователя в PCMS (пароль так же используется из PCMS).
+# Programming Paradigms
 
-Для сдачи домашних заданий
- * Клонируйте ваш личный репозиторий
-    * `git clone https://www.kgeorgiy.info/git-students/year2023/<USER>/paradigms`
-    * У личных репозиториев __нет__ web-интерфейса, используйте инструменты командной строки.
- * Добавьте ссылку на исходный репозиторий
-    * `git remote add source https://www.kgeorgiy.info/git/geo/paradigms-2024-solutions`
-    * Теперь можно будет забирать обновления командой `git pull source master`.
- * Добавляйте _только_ исходные файлы решений
-    * Сохраняйте текущую структуру каталогов и имена файлов.
-    * Не добавляйте исходный код тестов, `.class`-файлы и файлы проектов.
-    * Не добавляйте тесты и другой код из репозитория с тестами.
-    * Если структура репозитория не соответствует исходной, преподаватель не будет проверять решение.
-    * Вы можете редактировать `.gitignore` как вам удобно.
- * Перед отправкой решения на проверку
-    * Проверьте, что _все_ исходники компилируются (в том числе, тех ДЗ, которые вы не сдаёте).
-    * Проверьте, что тесты сдаваемого ДЗ проходят.
-    * Закоммитьте все изменения в `master`.
-    * Запуште все изменения.
-    * Запросите проверку решения, заполнив форму.
- * После проверки преподаватель либо укажет найденные недостатки в `NOTES.md`,
-   либо укажет их в виде комментариев в исходном коде, пометив их как `:NOTE:`.
+#### Этот репозиторий содержит выполенные домашние задания курса "Парадигмы программирования"
+
+## Задачи на [Java](java-solutions)
+- [Expression Parser](java-solutions/expression)
+- [Generic Parser](java-solutions/expression/generic)
+- [Binary Search](java-solutions/search)
+- [Queue](java-solutions/queue)
+
+## Задачи на [JavaScript](javascript-solutions)
+- [Functional Expressions](javascript-solutions/functionalExpression.js)
+- [Object Expressions](javascript-solutions/objectExpression.js)
+
+## Задачи на [Clojure](clojure-solutions)
+- [Linear Algebra](clojure-solutions/linear.clj)
+- [Functional and Object Expressions](clojure-solutions/expression.clj)
+
