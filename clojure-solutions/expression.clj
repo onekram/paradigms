@@ -8,15 +8,21 @@
     #(rec (read-string %))))
 
 (def parseFunction
-  (parse-rec func-map constant variable))
-
+  (parse-rec {'+         add
+              '-         subtract
+              '*         multiply
+              '/         divide
+              'negate    negate
+              'arithMean arithMean
+              'geomMean  geomMean
+              'harmMean  harmMean} constant variable))
 
 (def parseObject
-  (parse-rec {'+ Add
-              '- Subtract
-              '* Multiply
-              'negate Negate
-              '/ Divide
-              'arithMean ArithMean
-              'geomMean GeomMean
-              'harmMean HarmMean} Constant Variable))
+  (parse-rec {'+          Add
+              '-          Subtract
+              '*          Multiply
+              'negate     Negate
+              '/          Divide
+              'arithMean  ArithMean
+              'geomMean   GeomMean
+              'harmMean   HarmMean} Constant Variable))

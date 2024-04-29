@@ -28,13 +28,3 @@
 (def divide (get-op div))
 (def multiply (get-op *))
 (def negate subtract)
-
-(def func-map
-  {'+         add
-   '-         subtract
-   '*         multiply
-   '/         divide
-   'negate    negate
-   'arithMean arithMean
-   'geomMean  geomMean
-   'harmMean harmMean})
