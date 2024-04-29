@@ -50,10 +50,20 @@
   [name]
   `(def ~(to-symbol "_" name) (method ~(keyword name))))
 
+(defmacro defpublicmethod
+  "Defines method"
+  [name]
+  `(def ~name (method ~(keyword name))))
+
 (defmacro defmethods
   "Defines multiple methods"
   [& names]
   `(do ~@(map (fn [name] `(defmethod ~name)) names)))
+
+(defmacro defpublicmethods
+  "Defines multiple methods"
+  [& names]
+  `(do ~@(map (fn [name] `(defpublicmethod ~name)) names)))
 
 (defmacro defconstructor
   "Defines constructor"

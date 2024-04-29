@@ -50,28 +50,33 @@
   (parse-rec func-map constant variable))
 
 (load-file "proto.clj")
-(deffields sign args impl)
-(defmethod diff-impl)
-(def toString (method :toString))
-(def evaluate (method :evaluate))
-(def diff (method :diff))
+(deffields sign args evaluate-impl)
+(defpublicmethods toString evaluate diff)
+(defmethods diff-impl nth count without-nth)
+(declare Multiply)
+(declare Add)
+(declare ZERO)
+(declare ONE)
 (def OperationProto
   {:toString (fn [this] (str "(" (__sign this) " " (clojure.string/join " " (map toString (__args this))) ")"))
-   :evaluate (fn [this arg] (apply (__impl this) (map #(evaluate % arg) (__args this))))})
+   :evaluate (fn [this arg] (apply (__evaluate-impl this) (map #(evaluate % arg) (__args this))))
+   :diff (fn [this var] (apply Add (map-indexed
+                                     (fn [index arg] (Multiply (_diff-impl this index) (diff arg var)))
+                                     (__args this))))
+   :nth (fn [this n] (nth (__args this) n))
+   :count (fn [this] (count (__args this)))
+   :without-nth (fn [this n] (map-indexed #(if (= n %1) ONE %2) (__args this)))})
 
 (def funcs {})
-(defn CreateOperation [impl sign diff]
+(defn CreateOperation [evaluate-impl sign diff-impl]
   (let [op-proto (assoc OperationProto
-             :impl impl
-             :sign sign
-             :diff diff)
+                   :evaluate-impl evaluate-impl
+                   :sign sign
+                   :diff-impl diff-impl)
         op-cons (fn [this & args] (assoc this :args args))
         op (constructor op-cons op-proto)]
     (do (def funcs (assoc funcs (symbol sign) op))
         op)))
-
-(declare ZERO)
-(declare ONE)
 (def _value (field :value))
 (def ConstantProto
   {:toString (fn [this] (str (_value this)))
@@ -94,75 +99,69 @@
 (def Variable (constructor VariableCons VariableProto))
 (def ZERO (Constant 0))
 (def ONE (Constant 1))
-
+(def MINUS-ONE (Constant -1))
 (def Add
   (CreateOperation
-           +
-           "+"
-           (fn [this arg] (apply Add (map #(diff % arg) (__args this)))))) ; :NOTE:  ; + diff на уровне Operation
+    +
+    "+"
+    (fn [this index] ONE)))
 (def Subtract
   (CreateOperation
     -
     "-"
-    (fn [this arg] (apply Subtract (map #(diff % arg) (__args this))))))
-
+    (fn [this index] (if (= (_count this) 1) MINUS-ONE (if (= index 0) ONE MINUS-ONE)))))
 (def Multiply
   (CreateOperation
     *
     "*"
-    (fn [this arg]
-      (cond
-        (== (count (__args this)) 1) (diff (first (__args this)) arg)
-        :else (Add (Multiply (diff (first (__args this)) arg) (apply Multiply (rest (__args this))))
-                   (Multiply (first (__args this)) (diff (apply Multiply (rest (__args this))) arg)))))
-      )
-    )
+    (fn [this index] (apply Multiply (_without-nth this index)))))
 (def Negate
   (CreateOperation
     (fn [arg] (- arg))
     "negate"
-    (fn [this arg] (Negate (diff (first (__args this)) arg)))))
+    (fn [this index] MINUS-ONE)))
 (def Divide
   (CreateOperation
     div
     "/"
-    (fn [this arg]
-      (cond (== (count (__args this)) 1) (Divide
-                                          (Negate (diff (first (__args this)) arg))
-                                          (Multiply (first (__args this)) (first (__args this))))
-            :else (Divide
-                    (Subtract
-                      (Multiply (diff (first (__args this)) arg) (apply Multiply (rest (__args this))))
-                      (Multiply (first (__args this)) (diff (apply Multiply (rest (__args this))) arg)))
-                    (Multiply (apply Multiply (rest (__args this))) (apply Multiply (rest (__args this)))))))))
+    (fn [this index] (if (= (_count this) 1) (Divide MINUS-ONE (Multiply (first (__args this)) (first (__args this))))
+      (let [den (apply Multiply (rest (__args this)))]
+        (if (= index 0) (Divide den)
+                        (Divide (Negate (first (__args this)))
+                                (Multiply den (_nth this index)))))))))
 
 (def ArithMean
   (CreateOperation
     arith-mean-impl
     "arithMean"
-    (fn [this arg] (diff
-                     (Divide (apply Add (__args this)) (Constant (count (__args this))))
-                     arg))))
+    (fn [this index] (Divide (Constant (_count this))))))
 (def GeomMean
   (CreateOperation
     geom-mean-impl
     "geomMean"
-    (fn [this arg] (let [mult (apply Multiply (__args this))]
-                     (Divide
-                       (Multiply (diff mult arg) (apply GeomMean (__args this)))
-                       (Multiply (Constant (count (__args this))) mult))))))
+    (fn [this index] (Divide
+                       (apply GeomMean (__args this))
+                       (Multiply (Constant (_count this)) (_nth this index))))))
 (def HarmMean
   (CreateOperation
     harm-mean-impl
     "harmMean"
-    (fn [this arg] (let [sum-inverses (apply Add (map #(Divide ONE %) (__args this)))]
+    (fn [this index] (let [sum-inverses (apply Add (map Divide (__args this)))
+                           current (Multiply (_nth this index) (_nth this index))]
                      (Divide
-                       (Negate (Multiply (diff sum-inverses arg) (Constant (count (__args this)))))
-                       (Multiply sum-inverses sum-inverses))))))
+                       (Constant (_count this))
+                       (Multiply sum-inverses sum-inverses current))))))
 
 (def parseObject
   (parse-rec funcs Constant Variable))
 
-(def expr (Divide (Variable "x") (Variable "y") (Constant 2)))
+(def expr (Divide (Multiply (Constant 2) (Variable "x")) (Negate (Multiply (Constant 5) (Variable "y"))) (Multiply (Constant 45) (Variable "z"))))
 (def expr1 (diff expr "x"))
-(println (evaluate expr1 {"x" 1 "y" 100}))
+
+(def expr2 (GeomMean (Variable "x") (Constant 10)))
+(def expr3 (diff expr2 "x"))
+
+(println (toString expr2) "expr2")
+(println (toString expr3) "expr3")
+
+;(println (evaluate expr1 {"x" 1 "y" 1 "z" 1}))
