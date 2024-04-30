@@ -2,7 +2,6 @@
 (load-file "functional.clj")
 (declare ZERO ONE)
 
-; :NOTE: нет смысла наследвоваться от AbstractOperation
 (defclass Constant _ [arg]
           (public toString [] (str (__arg this)))
           (public evaluate [_] (__arg this))
