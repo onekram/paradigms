@@ -29,7 +29,6 @@
           (private without-nth [n] (map-indexed #(if (= n %1) ONE %2) (__args this)))
           (abstract impl)
           (abstract get-sign)
-          (abstract evaluate)
           (abstract diff-impl))
 
 (defclass Add BaseOperation []
