@@ -10,6 +10,8 @@
           (abstract diff))
 
 (declare ZERO ONE)
+
+; :NOTE: нет смысла наследвоваться от AbstractOperation
 (defclass Constant AbstractOperation []
           (private toString [] (str (first (__args this))))
           (private evaluate [_] (first (__args this)))
