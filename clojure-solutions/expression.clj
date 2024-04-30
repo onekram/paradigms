@@ -26,3 +26,5 @@
               'arithMean  ArithMean
               'geomMean   GeomMean
               'harmMean   HarmMean} Constant Variable))
+
+(load-file "combinators.clj")

@@ -1,37 +1,27 @@
 (load-file "proto.clj")
 (load-file "functional.clj")
-
-(defclass AbstractOperation _ [& args]
-          (public toString [] (_toString this))
-          (public evaluate [arg] (_evaluate this arg))
-          (public diff [arg] (_diff this arg))
-          (abstract toString)
-          (abstract evaluate)
-          (abstract diff))
-
 (declare ZERO ONE)
 
 ; :NOTE: нет смысла наследвоваться от AbstractOperation
-(defclass Constant AbstractOperation []
-          (private toString [] (str (first (__args this))))
-          (private evaluate [_] (first (__args this)))
-          (private diff [_] ZERO))
+(defclass Constant _ [arg]
+          (public toString [] (str (__arg this)))
+          (public evaluate [_] (__arg this))
+          (public diff [_] ZERO))
 
-
-(defclass Variable AbstractOperation []
-          (private toString [] (first (__args this)))
-          (private evaluate [arg] (arg (first (__args this))))
-          (private diff [arg] (if (= arg (first (__args this))) ONE ZERO)))
+(defclass Variable _ [var]
+          (public toString [] (__var this))
+          (public evaluate [arg] (arg (__var this)))
+          (public diff [arg] (if (= arg (__var this)) ONE ZERO)))
 
 (def ZERO (Constant 0))
 (def ONE (Constant 1))
 (def MINUS-ONE (Constant -1))
 
 (declare Add Multiply)
-(defclass BaseOperation AbstractOperation []
-          (private toString [] (str "(" (_get-sign this) " " (clojure.string/join " " (map toString (__args this))) ")"))
-          (private evaluate [arg] (apply (_impl this) (map #(_evaluate % arg) (__args this))))
-          (private diff [var] (apply Add (map-indexed
+(defclass BaseOperation _ [& args]
+          (public toString [] (str "(" (_get-sign this) " " (clojure.string/join " " (map toString (__args this))) ")"))
+          (public evaluate [arg] (apply (_impl this) (map #(evaluate % arg) (__args this))))
+          (public diff [var] (apply Add (map-indexed
                                            (fn [index arg] (Multiply (_diff-impl this index) (diff arg var)))
                                            (__args this))))
           (private nth [n] (nth (__args this) n))
