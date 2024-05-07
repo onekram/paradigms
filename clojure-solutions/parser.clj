@@ -56,7 +56,7 @@
   (reduce (partial _either) parser parsers))
 
 (defn +opt [parser]
-  (+or parser (_empty nil)))
+  (+or parser (_empty "")))
 
 (defn +star [parser]
   (letfn [(rec [] (+or (+seqf cons parser (delay (rec))) (_empty ())))] (rec)))
