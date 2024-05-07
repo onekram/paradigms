@@ -23,7 +23,6 @@
   (+map (partial m) (apply +or (map (comp +word first) m))))
 (def *func (+get-func func-map))
 (def *arg (+str (+plus (+or (+char "xyz") (+char "XYZ")))))
-;(println (*arg "Xxyx"))
 (def *var (+map (partial Variable) *arg))
 (def *space (+char " \t\r\n"))
 (def *ws (+ignore (+star *space)))
@@ -42,13 +41,10 @@
 (defn parseObjectPostfix [expr]
   (-value (*postfix expr)))
 
-
-
 ;------------------------------------------Infix -------------------------------------------------------------------
 
-(def binary (fn [[a f b]] (f a b)))
-(def unary-prefix (fn [[f a]] (f a)))
-(def *base (+seqn 0 *ws (+or *var *const) *ws) )
+(defn binary [[a f b]] (f a b))
+(defn unary-prefix [[f a]] (f a))
 (defn +right-assoc [func base]
   (+or (+map binary (+seq *ws base *ws func *ws (delay (+or (+right-assoc func base) base)) *ws)) base))
 (defn parse-left [[acc last]]
@@ -59,27 +55,42 @@
 
 (defn +unary-prefix [func base]
   (+or (+map unary-prefix (+seq *ws func *ws (delay (+unary-prefix func base)) *ws)) base))
-
 (defn unary-postfix [[acc last]]
   (if (empty? last) acc
                     (let [op (first last)] (unary-postfix [(op acc) (rest last)]))))
 (defn +unary-postfix [func base]
   (+map unary-postfix (+seq *ws base *ws (+star (+seqn 0 *ws func *ws)) *ws)))
-(declare *add-subtract)
+(def *base (+seqn 0 *ws (+or *var *const) *ws) )
+(declare *expression)
 (def *infix-scope (+or
-                    (+seqn 0 *ws (+i-char "(") *ws (delay *add-subtract) *ws (+i-char ")") *ws)
+                    (+seqn 0 *ws (+i-char "(") *ws (delay *expression) *ws (+i-char ")") *ws)
                     *base))
-(def *unary-prefix (+unary-prefix (+get-func {"negate" Negate
-                                               "cos" Cos
-                                               "sin" Sin}) *infix-scope))
-(def *unary-postfix (+unary-postfix (+get-func {"sinp" SinP
-                                        "cosp" CosP}) *unary-prefix))
-(def *sinc-cosc (+right-assoc (+get-func {"sinc" SinC
-                                          "cosc" CosC}) *unary-postfix))
-(def *multiply-subtract (+left-assoc (+get-func {"*" Multiply
-                                                 "/" Divide}) *sinc-cosc))
-(def *add-subtract (+left-assoc (+get-func {"+" Add
-                                            "-" Subtract}) *multiply-subtract))
-
+(defn +expression [& elems]
+  (letfn [(rec [b last] (if (empty? last) b
+                                          (let [[m type] (first last)
+                                                parser (cond (= type 'left-assoc) +left-assoc
+                                                             (= type 'right-assoc) +right-assoc
+                                                             (= type 'unary-postfix) +unary-postfix
+                                                             (= type 'unary-prefix) +unary-prefix
+                                                             :else nil)
+                                                funcs (+get-func m)]
+                                            (rec (parser funcs b) (rest last)))))]
+    (rec *infix-scope elems)))
+(def *expression (+expression [{"negate" Negate
+                                 "cos" Cos
+                                 "sin" Sin}
+                                'unary-prefix]
+                               [{"sinp" SinP
+                                 "cosp" CosP}
+                                'unary-postfix]
+                               [{"sinc" SinC
+                                 "cosc" CosC}
+                                'right-assoc]
+                               [{"*" Multiply
+                                 "/" Divide}
+                                'left-assoc]
+                               [{"+" Add
+                                 "-" Subtract}
+                                'left-assoc]))
 (defn parseObjectInfix [expr]
-  (-value (*add-subtract expr)))
+  (-value (*expression expr)))
