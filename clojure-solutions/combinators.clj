@@ -26,7 +26,6 @@
 (def *var (+map (partial Variable) *arg))
 (def *space (+char " \t\r\n"))
 (def *ws (+ignore (+star *space)))
-
 (defn +i-char [c]
   (+ignore (+char c)))
 (declare *postfix)
@@ -61,10 +60,6 @@
 (defn +unary-postfix [func base]
   (+map unary-postfix (+seq *ws base *ws (+star (+seqn 0 *ws func *ws)) *ws)))
 (def *base (+seqn 0 *ws (+or *var *const) *ws) )
-(declare *expression)
-(def *infix-scope (+or
-                    (+seqn 0 *ws (+i-char "(") *ws (delay *expression) *ws (+i-char ")") *ws)
-                    *base))
 (defn +expression [& elems]
   (letfn [(rec [b last] (if (empty? last) b
                                           (let [[m type] (first last)
@@ -75,7 +70,8 @@
                                                              :else nil)
                                                 funcs (+get-func m)]
                                             (rec (parser funcs b) (rest last)))))]
-    (rec *infix-scope elems)))
+    (letfn [(scope [] (+or (+seqn 0 *ws (+i-char "(") *ws (delay (rec (scope) elems)) *ws (+i-char ")") *ws) *base))]
+      (rec (scope) elems))))
 (def *expression (+expression [{"negate" Negate
                                  "cos" Cos
                                  "sin" Sin}
