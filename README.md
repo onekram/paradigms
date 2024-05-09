@@ -14,5 +14,6 @@
 
 ## Задачи на [Clojure](clojure-solutions)
 - [Linear Algebra](clojure-solutions/linear.clj)
-- [Functional and Object Expressions](clojure-solutions/expression.clj)
-
+- [Functional Expressions](clojure-solutions/functional.clj)
+- [Object Expression](clojure-solutions/object.clj)
+- [Combinatorial Parser](clojure-solutions/combinators.clj)
