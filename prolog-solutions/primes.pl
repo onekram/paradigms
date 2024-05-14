@@ -29,13 +29,13 @@ intersection([H | TFX], [H | TFY], [H | T]) :- intersection(TFX, TFY, T).
 intersection([HFX | TFX], [HFY | TFY], R) :- HFX < HFY, intersection(TFX, [HFY | TFY], R).
 intersection([HFX | TFX], [HFY | TFY], R) :- HFX > HFY, intersection([HFX | TFX], TFY, R).
 
-gcd(X, Y, R) :- prime_divisors(X, FX), prime_divisors(Y, FY), intersection(FX, FY, IR), prime_divisors(R, IR).
-
-
 union(FX, [], FX) :- !.
 union([], FY, FY) :- !. 
 union([H | TFX], [H | TFY], [H | T]) :- union(TFX, TFY, T).
 union([HFX | TFX], [HFY | TFY], [HFX | T]) :- HFX < HFY, union(TFX, [HFY | TFY], T).
 union([HFX | TFX], [HFY | TFY], [HFY | T]) :- HFX > HFY, union([HFX | TFX], TFY, T).
 
-lcm(X, Y, R) :- prime_divisors(X, FX), prime_divisors(Y, FY), union(FX, FY, IR), prime_divisors(R, IR).
+gcdlcm(X, Y, F, R) :- prime_divisors(X, FX), prime_divisors(Y, FY), G =.. [F, FX, FY, IR], call(G), prime_divisors(R, IR).
+
+gcd(X, Y, R) :- gcdlcm(X, Y, intersection, R).
+lcm(X, Y, R) :- gcdlcm(X, Y, union, R).
