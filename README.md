@@ -17,3 +17,7 @@
 - [Functional Expressions](clojure-solutions/functional.clj)
 - [Object Expression](clojure-solutions/object.clj)
 - [Combinatorial Parser](clojure-solutions/combinators.clj)
+
+## Задачи на [Prolog](prolog-solutions)
+- [Primes](prolog-solutions/primes.pl)
+- [AVL Binary Tree](prolog-solutions/tree-map.pl)
