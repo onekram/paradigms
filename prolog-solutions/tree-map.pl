@@ -1,8 +1,8 @@
 get_val(		node(V, _, _, _, _, _), V).
 get_key(		node(_, K, _, _, _, _), K).
-get_height(	node(_, _, H, _, _, _), H).
+get_height(	    node(_, _, H, _, _, _), H).
 get_left(		node(_, _, _, L, _, _), L).
-get_right(	node(_, _, _, _, R, _), R).
+get_right(	    node(_, _, _, _, R, _), R).
 get_size(		node(_, _, _, _, _, S), S).
 get_height(nullptr, 0).
 get_size(nullptr, 0).
