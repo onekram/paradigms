@@ -66,14 +66,20 @@ deepest_left(N, N) :-
 deepest_left(N, R) :-
 		get_left(N, NL), deepest_left(NL, R). 
 
+deepest_remove(node(V, K, H, nullptr, RES, S), RES, K, V) :- !. 
+
+deepest_remove(node(V, K, H, L, R, S), CRES, RESK, RESV) :- 
+		deepest_remove(L, RES, RESK, RESV), 
+		correct(node(V, K, H, RES, R, S), CRES), !. 
+
 map_remove(nullptr, _, nullptr) :- !.
 map_remove(node(_, KQ, _, nullptr, nullptr, _), KQ, nullptr) :- !.
 map_remove(node(_, KQ, _, L, nullptr, _), KQ, L) :- !.
 map_remove(node(_, KQ, _, nullptr, R, _), KQ, R) :- !.
+
 map_remove(node(V, KQ, H, L, R, S), KQ, CRES) :-
-		deepest_left(R, node(DPV, DPK, DPH, DPL, DPR, DPS)),
-		map_remove(R, DPK, NR), 
-		correct(node(DPV, DPK, H, L, NR, S), CRES), !.
+		deepest_remove(R, RES, DPK, DPV), 
+		correct(node(DPV ,DPK, H, L, RES, S), CRES), !.
 map_remove(node(V, K, H, L, R, S), KQ, CLRES) :- 
 		KQ < K,
 		map_remove(L, KQ, LRES), 
@@ -114,18 +120,11 @@ map_headMapSize(node(_, K, _, L, R, _), TK, RS) :-
 		get_size(L, LS), 
 		map_headMapSize(R, TK, RRS), 
 		RS is RRS + LS + 1, !.
-		
-map_tailMapSize(nullptr, _, 0) :- !.
-map_tailMapSize(node(_, FK, _, _, R, _), FK, RES) :-
-		get_size(R, RS), RES is RS + 1, !.
-map_tailMapSize(node(_, K, _, _, R, _), FK, RES) :-
-		K < FK, 
-		map_tailMapSize(R, FK, RES), !.
-map_tailMapSize(node(_, K, _, L, R, _), FK, RES) :-
-		K > FK, 
-		get_size(R, RS), 
-		map_tailMapSize(L, FK, LS), 
-		RES is RS + LS + 1, !.
+
+map_tailMapSize(N, FK, RES) :-
+		get_size(N, SZ), 
+		map_headMapSize(N, FK, HRES), 
+		RES is SZ - HRES.
 
 map_build([], nullptr).
 map_build([(K, V) | T], R1) :- map_build(T, R), map_put(R, K, V, R1).
