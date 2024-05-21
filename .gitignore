@@ -63,3 +63,6 @@ paradigms.iml
 
 # Clojure test directory
 /clojure
+
+# Prolog test directory
+/prolog
