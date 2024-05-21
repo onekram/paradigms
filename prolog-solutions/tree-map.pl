@@ -61,11 +61,6 @@ correct(node(V, K, H, L, R, S), RES) :-
     (D2 > 0, left_rotate(L, NL), right_rotate(node(V, K, H, NL, R, S), RES); right_rotate(node(V, K, H, L, R, S), RES)), !.
 correct(N, NN) :- correct_height(N, NN).
 
-deepest_left(N, N) :-
-		get_left(N, nullptr), !. 
-deepest_left(N, R) :-
-		get_left(N, NL), deepest_left(NL, R). 
-
 deepest_remove(node(V, K, H, nullptr, RES, S), RES, K, V) :- !. 
 
 deepest_remove(node(V, K, H, L, R, S), CRES, RESK, RESV) :- 
