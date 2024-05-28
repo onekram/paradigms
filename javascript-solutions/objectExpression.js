@@ -362,16 +362,3 @@ function parsePrefix(expression) {
 function parsePostfix(expression) {
     return new Parser(expression, false).parse();
 }
-
-function test() {
-    try {
-        let expr1 = parsePrefix('( / (negate x) 2)');
-        console.log(expr1.postfix());
-    } catch (ex) {
-        console.log(ex.name);
-        console.log(ex.message);
-        console.log(ex);
-    }
-}
-
-test()
