@@ -10,8 +10,6 @@ to_lower(C, LC) :-
 lookup(K, [(K1, V) | _], V) :- atom_chars(K, [H | _]), to_lower(H, K1).
 lookup(K, [_ | T], V) :- lookup(K, T, V).
 
-nonvar(V, _) :- var(V).
-nonvar(V, T) :- nonvar(V), call(T).
 
 ws --> [].
 ws --> [' '], ws.
@@ -23,7 +21,6 @@ check_p([H | T], L) -->
 
 unop_p(op_negate) --> [n, e, g, a, t, e].
 unop_p(op_bitnot) --> ['~'].
-
 op_p(op_add)    --> ['+'].
 op_p(op_subtract) --> ['-'].
 op_p(op_multiply) --> ['*'].
@@ -31,11 +28,8 @@ op_p(op_divide)  --> ['/'].
 op_p(op_bitand)  --> ['&'].
 op_p(op_bitor)   --> ['|'].
 op_p(op_bitxor)  --> ['^'].
-
 terop_p(op_bitif) --> ['?'].
 terop_p(op_bitmux) --> ['¿'].
-
-
 
 expr_p(variable(Name)) -->
  { nonvar(Name) -> call(atom_chars(Name, Chars)); var(Name) },
@@ -51,9 +45,20 @@ expr_p(const(Value)) -->
   number_chars(Value, Chars) }.
 
   
-expr_p(operation(Op, A))     --> ws, unop_p(Op), [' '], ws, expr_p(A), ws.
-expr_p(operation(Op, A, B))   --> ws, ['('], ws, expr_p(A), [' '], ws, op_p(Op), [' '] , ws, expr_p(B), ws, [')'], ws.
-expr_p(operation(Op, C, T, F))  --> ws, ['('], ws, expr_p(C), [' '], ws, terop_p(Op), [' '],  ws, expr_p(T), [' '], ws, [':'], [' '], ws, expr_p(F), ws, [')'], ws.
+expr_p(operation(Op, A)) --> 
+		ws, unop_p(Op), 
+		[' '], ws, expr_p(A), ws.
+		
+expr_p(operation(Op, A, B)) --> 
+		ws, ['('], ws, expr_p(A), 
+		[' '], ws, op_p(Op), [' '],
+		ws, expr_p(B), ws, [')'], ws.
+		
+expr_p(operation(Op, C, T, F)) --> 
+		ws, ['('], ws, expr_p(C), [' '],
+		ws, terop_p(Op), [' '],  ws, 
+		expr_p(T), [' '], ws, 
+		[':'], [' '], ws, expr_p(F), ws, [')'], ws.
 
 infix_str(E, A) :- ground(E),
     phrase(expr_p(E), C), atom_chars(A, C), !.
