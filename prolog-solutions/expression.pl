@@ -15,13 +15,13 @@ ws --> [' '], ws.
 
 expr_p(variable(N)) --> 
 		{ nonvar(N) -> call(atom_chars(N, CS)); var(N) },
-		ws, var_p(CS), ws,
+		ws, check_p(CS, [x, y, z, 'X', 'Y', 'Z']), ws,
 		{ CS = [_ | _], atom_chars(N, CS) }.
 
-var_p([]) --> [].
-var_p([H | T]) -->
-  { member(H, [x, y, z, 'X', 'Y', 'Z']) },
-  [H], var_p(T).
+check_p([], L) --> [].
+check_p([H | T], L) -->
+  { member(H, L) },
+  [H], check_p(T, L).
 
 		
 number_chars_minus('-', ['-']) :- !.
@@ -29,13 +29,8 @@ number_chars_minus(V, CS) :- number_chars(V, CS).
 
 expr_p(const(V)) -->
   { nonvar(V) -> call(number_chars(V, CS)); var(V) },
-  ws, digits_p(CS), ws, 
+  ws, check_p(CS, ['-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.']), ws, 
   { CS = [_ | _], number_chars_minus(V, CS) }.
-  
-digits_p([]) --> [].
-digits_p([H | T]) -->
-  { member(H, ['-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.']) },
-  [H], digits_p(T).
 
 op_p(op_bitif) --> ['?'].
 op_p(op_bitmux) --> ['¿'].
