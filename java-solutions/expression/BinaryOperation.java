@@ -1,8 +1,5 @@
 package expression;
 
-
-import com.oracle.truffle.regex.tregex.automaton.StateIndex;
-
 import java.math.BigInteger;
 import java.util.List;
 
