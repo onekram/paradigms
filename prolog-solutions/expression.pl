@@ -21,36 +21,31 @@ check_p([H | T], L) -->
   { member(H, L) },
   [H], check_p(T, L).
 
+unop_p(op_negate) --> [n, e, g, a, t, e].
+unop_p(op_bitnot) --> ['~'].
+
 op_p(op_add)    --> ['+'].
 op_p(op_subtract) --> ['-'].
 op_p(op_multiply) --> ['*'].
 op_p(op_divide)  --> ['/'].
-unop_p(op_negate) --> ['n', 'e', 'g', 'a', 't', 'e'].
-
-unop_p(op_bitnot) --> ['~'].
 op_p(op_bitand)  --> ['&'].
 op_p(op_bitor)   --> ['|'].
 op_p(op_bitxor)  --> ['^'].
 
-terop_first_p(op_bitif) --> ['?'].
-terop_first_p(op_bitmux) --> ['¿'].
+terop_p(op_bitif) --> ['?'].
+terop_p(op_bitmux) --> ['¿'].
 
-symbol_p([], _)     --> [].
-symbol_p([H | T], List) --> 
- { member(H, List) },
- [H], 
- symbol_p(T, List).
 
 
 expr_p(variable(Name)) -->
- { nonvar(Name, atom_chars(Name, Chars)) },
- ws, symbol_p(Chars, ['X', 'Y', 'Z', x, y, z]), ws,
+ { nonvar(Name) -> call(atom_chars(Name, Chars)); var(Name) },
+ ws, check_p(Chars, ['X', 'Y', 'Z', x, y, z]), ws,
  {Chars = [_ | _], atom_chars(Name, Chars)}.
 
 
 expr_p(const(Value)) -->
-  { nonvar(Value, number_chars(Value, Chars)) },
-  ws, symbol_p(Chars, ['.', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-']), ws,
+  { nonvar(Value) -> call(number_chars(Value, Chars)); var(Value) },
+  ws, check_p(Chars, ['.', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-']), ws,
   { Chars = [_ | _], 
   \= (Chars, ['-']), 
   number_chars(Value, Chars) }.
@@ -58,7 +53,7 @@ expr_p(const(Value)) -->
   
 expr_p(operation(Op, A))     --> ws, unop_p(Op), [' '], ws, expr_p(A), ws.
 expr_p(operation(Op, A, B))   --> ws, ['('], ws, expr_p(A), [' '], ws, op_p(Op), [' '] , ws, expr_p(B), ws, [')'], ws.
-expr_p(operation(Op, C, T, F))  --> ws, ['('], ws, expr_p(C), [' '], ws, terop_first_p(Op), [' '],  ws, expr_p(T), [' '], ws, [':'], [' '], ws, expr_p(F), ws, [')'], ws.
+expr_p(operation(Op, C, T, F))  --> ws, ['('], ws, expr_p(C), [' '], ws, terop_p(Op), [' '],  ws, expr_p(T), [' '], ws, [':'], [' '], ws, expr_p(F), ws, [')'], ws.
 
 infix_str(E, A) :- ground(E),
     phrase(expr_p(E), C), atom_chars(A, C), !.
