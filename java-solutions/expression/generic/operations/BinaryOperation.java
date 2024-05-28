@@ -1,6 +1,5 @@
 package expression.generic.operations;
 
-import expression.Priority;
 import expression.generic.type.Mode;
 
 public class BinaryOperation<T extends Number> {

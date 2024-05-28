@@ -10,9 +10,10 @@ public class Main {
     public static void main(String[] args) {
         ExpressionParser expressionParser = new ExpressionParser();
         try {
-            MyExpression ex = expressionParser.parse("x + (y + z) + 1 + 2");
+            MyExpression ex = expressionParser.parse("0 + 0");
+
             System.out.println(ex.toMiniString());
-            System.out.println(ex.getClass());
+            System.out.println(ex.evaluate(10, 10, 10));
         } catch (ParsingException e) {
             System.out.println("Error parsing expression: " + e.getMessage());
         }

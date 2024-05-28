@@ -9,7 +9,9 @@ public class Const implements MyExpression {
     public Const(int value) {
         this.value = BigInteger.valueOf(value);
     }
-
+    public Const(String value) {
+        this.value = new BigInteger(value);
+    }
     public Const(BigInteger value) {
         this.value = value;
     }
@@ -55,9 +57,7 @@ public class Const implements MyExpression {
     }
 
     @Override
-    public Priority getPriority() {
-        return Priority.NP;
+    public int getPriority() {
+        return 100;
     }
-
-
 }

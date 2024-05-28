@@ -3,106 +3,163 @@ package expression.parser;
 import expression.*;
 import expression.exceptions.ListParser;
 import expression.exceptions.ParsingException;
+import expression.exceptions.TripleParser;
 import expression.exceptions.UnexpectedTokenException;
 
-import java.util.List;
 
-public class ExpressionParser implements ListParser {
-    protected TokenParser runner;
-    private final int start = 6;
+import java.util.*;
+import java.util.function.BinaryOperator;
+import java.util.function.UnaryOperator;
+
+public class ExpressionParser implements ListParser, TripleParser {
+    protected TokenParser tokenParser;
+
+    private final Map<String, BiOp> binaryOperations;
+    private final Map<String, UnOp> unaryOperations;
+    private final List<Integer> priorityList;
+
+    public ExpressionParser() {
+        this(
+                Map.of(
+                        "+", new BiOp(Add::new, 10),
+                        "-", new BiOp(Subtract::new, 10),
+                        "*", new BiOp(Multiply::new, 20),
+                        "/", new BiOp(Divide::new, 20),
+                        "min", new BiOp(Min::new, 5),
+                        "max", new BiOp(Max::new, 5),
+                        "<<", new BiOp(LShift::new, 1),
+                        ">>", new BiOp(RShift::new, 1),
+                        ">>>", new BiOp(AShift::new, 1)
+
+                ),
+                Map.of(
+                        "-", new UnOp(Negate::new)
+                )
+        );
+    }
+
+    public ExpressionParser(Map<String, BiOp> binaryOperations, Map<String, UnOp> unaryOperations) {
+        this.binaryOperations = binaryOperations;
+        this.unaryOperations = unaryOperations;
+        priorityList = new HashSet<>(
+                        binaryOperations
+                                .values()
+                                .stream()
+                                .map(BiOp::getPriority)
+                                .toList())
+                .stream()
+                .sorted()
+                .toList();
+    }
+
     public MyExpression parse(String expression) throws ParsingException {
-        this.runner = new TokenParser(expression, List.of("x", "y", "z"));
-        runner.nextStep();
-        MyExpression ex = expression(start);
-        if (!runner.isEnd()) {
+        return parse(expression, List.of("x", "y", "z"));
+    }
+
+    public MyExpression parse(String expression, List<String> variables) throws ParsingException {
+        this.tokenParser = new TokenParser(expression.trim(), variables);
+        MyExpression ex = expression();
+        if (!tokenParser.isEnd()) {
             throw new UnexpectedTokenException("Unexpected end of expression");
         }
         return ex;
     }
-
-    @Override
-    public MyExpression parse(String expression, List<String> variables) throws ParsingException{
-        this.runner = new TokenParser(expression, variables);
-        runner.nextStep();
-        MyExpression ex = expression(start);
-        if (!runner.isEnd()) {
-            throw new UnexpectedTokenException("Unexpected end of expression");
-        }
-        return ex;
+    private MyExpression expression() throws ParsingException {
+        return expression(0);
     }
 
-    private MyExpression expression(int priority) throws ParsingException {
-        MyExpression first = parseOperand(priority);
-
-        while (runner.hasNext()) {
-            Operand operator = runner.getCurrentElement();
-            if (operator.getType() == Operation.UNKNOWN) {
-                throw new UnexpectedTokenException(String.format("Unknown operation '%s'", operator),
-                        runner.getPos());
-            }
-            if (operator.getType().compare(Priority.getPriority(priority))) {
+    private MyExpression expression(int priorityIndex) throws ParsingException {
+        int currentPriority = priorityList.get(priorityIndex++);
+        MyExpression first = priorityIndex == priorityList.size()
+                ? factor()
+                : expression(priorityIndex);
+        while (tokenParser.hasNext()) {
+            String element;
+            tokenParser.skipSpace();
+            if (tokenParser.tesCloseBracket()) {
                 return first;
-            } else {
-                runner.nextStep();
             }
-
-            MyExpression second = parseOperand(priority);
-            first = action(first, second, operator);
+            int currentPos = tokenParser.getPos();
+            if (tokenParser.parseToken(binaryOperations)) {
+                element = tokenParser.getToken();
+            } else {
+                throw new UnexpectedTokenException(String.format("Unexpected token '%s'", tokenParser.parseToken()),
+                        tokenParser.getPos());
+            }
+            if (binaryOperations.get(element).getPriority() != currentPriority) {
+                tokenParser.setNewToken();
+                tokenParser.setPos(currentPos);
+                return first;
+            }
+            MyExpression second = priorityIndex == priorityList.size()
+                    ? factor()
+                    : expression(priorityIndex);
+            first = binaryOperations.get(element).apply(first, second);
         }
         return first;
     }
-    MyExpression parseOperand(int priority) throws ParsingException {
-        return priority == 1 ? factor() : expression(priority - 1);
-    }
-    protected MyExpression action(MyExpression first, MyExpression second, Operand operand) {
-        return switch (operand.getType()) {
-            case MINUS -> new Subtract(first, second);
-            case PLUS -> new Add(first, second);
-            case MUL -> new Multiply(first, second);
-            case DIV -> new Divide(first, second);
-            case OR -> new Or(first, second);
-            case AND -> new And(first, second);
-            case XOR -> new Xor(first, second);
-            case MIN -> new Min(first, second);
-            case MAX -> new Max(first, second);
-            case L_SHIFT -> new LShift(first, second);
-            case R_SHIFT -> new RShift(first, second);
-            case A_SHIFT -> new AShift(first, second);
-            default -> throw new AssertionError(String.format("No action expected for '%s'", operand));
-        };
-    }
 
-    protected MyExpression factor() throws ParsingException{
-        Operand next = runner.getCurrentElement();
-        if (next.getType().isBinary()) {
-            throw new UnexpectedTokenException(String.format("Unexpected token '%s'", next), runner.getPos());
-        }
-        MyExpression result;
-        if (runner.isOpenBracket(next.getType())) {
-            runner.nextStep();
-            result = expression(start);
-            if (!runner.isPairedBracket(next.getType(), runner.getCurrentElement().getType())) {
-                throw new UnexpectedTokenException(String.format("Expected ) but found '%s'",
-                        runner.getCurrentElement()),
-                        runner.getPos());
+    private MyExpression factor() throws ParsingException {
+        tokenParser.skipSpace();
+        if (tokenParser.testOpenBracket()) {
+            char open = tokenParser.getCur();
+            char close = tokenParser.getPaired(open);
+
+            tokenParser.step();
+            MyExpression result = expression();
+            if (tokenParser.isEnd()) {
+                throw new UnexpectedTokenException("Expected " + close);
             }
-            runner.nextStep();
+            if (!tokenParser.test(close)) {
+                throw new ParsingException("Expected " + close + " but found " + tokenParser.parseToken());
+            }
+            tokenParser.step();
             return result;
         }
-
-        runner.nextStep();
-        return parseStep(next);
+        if (tokenParser.isEnd()) {
+            throw new UnexpectedTokenException("Unexpected end of expression");
+        }
+        if (tokenParser.parseVar()) {
+            String varToken = tokenParser.getToken();
+            return new Variable(varToken, tokenParser.getVarIndex(varToken));
+        } else if (tokenParser.parseConst()) {
+            return new Const(parseInt(tokenParser.getToken()));
+        } else if (tokenParser.parseToken(unaryOperations)) {
+            return unaryOperations.get(tokenParser.getToken()).apply(factor());
+        } else {
+            throw new UnexpectedTokenException(String.format("Unexpected token '%s'", tokenParser.parseToken()),
+                    tokenParser.getPos());
+        }
     }
 
-    protected MyExpression parseStep(Operand next) throws ParsingException {
-        return switch (next.getType()) {
-            case UNARY_MINUS -> new Negate(factor());
-            case CONST -> new Const(Integer.parseInt(next.getName()));
-            case UNARY_L1 -> new HighOnes(factor());
-            case UNARY_T1 -> new LowOnes(factor());
-            case VAR -> new Variable(next.getName(), runner.getVariablesIndex(next.getName()));
-            default -> throw new UnexpectedTokenException(String.format("Unexpected token '%s'", next),
-                    runner.getPos());
-        };
+    protected int parseInt(String value) throws ParsingException {
+        return Integer.parseInt(value);
+    }
+
+    public static class BiOp {
+        private final BinaryOperator<MyExpression> func;
+        private final int priority;
+
+        public BiOp(BinaryOperator<MyExpression> func, int priority) {
+            this.priority = priority;
+            this.func = func;
+        }
+        public MyExpression apply(MyExpression left, MyExpression right) {
+            return func.apply(left, right);
+        }
+        public int getPriority() {
+            return priority;
+        }
+    }
+
+    public static class UnOp {
+        private final UnaryOperator<MyExpression> func;
+
+        public UnOp(UnaryOperator<MyExpression> func) {
+            this.func = func;
+        }
+        public MyExpression apply(MyExpression left) {
+            return func.apply(left);
+        }
     }
 }

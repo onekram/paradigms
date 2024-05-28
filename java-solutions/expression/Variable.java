@@ -82,7 +82,7 @@ public class Variable implements MyExpression {
     }
 
     @Override
-    public Priority getPriority() {
-        return Priority.NP;
+    public int getPriority() {
+        return 100;
     }
 }

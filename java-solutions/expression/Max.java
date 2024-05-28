@@ -22,8 +22,8 @@ public class Max extends BinaryOperation {
         return "max";
     }
     @Override
-    public Priority getPriority() {
-        return Priority.LOW;
+    public int getPriority() {
+        return 5;
     }
     @Override
     protected boolean canOpen(MyExpression expression) {
