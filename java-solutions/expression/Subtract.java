@@ -23,8 +23,8 @@ public class Subtract extends BinaryOperation {
         return "-";
     }
     @Override
-    public Priority getPriority() {
-        return Priority.COMMON;
+    public int getPriority() {
+        return 10;
     }
     @Override
     protected boolean canOpen(MyExpression expression) {

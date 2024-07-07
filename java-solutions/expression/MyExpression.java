@@ -16,5 +16,5 @@ public interface MyExpression extends Expression, TripleExpression, BigIntegerEx
     boolean equals(Object obj);
     int hashCode();
 
-    Priority getPriority();
+    int getPriority();
 }

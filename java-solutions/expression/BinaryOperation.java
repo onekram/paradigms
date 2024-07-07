@@ -1,6 +1,5 @@
 package expression;
 
-
 import java.math.BigInteger;
 import java.util.List;
 
@@ -60,24 +59,23 @@ public abstract class BinaryOperation implements MyExpression {
 
     @Override
     public String toMiniString() {
-        StringBuilder sb = new StringBuilder();
-        return sb.append(formatExpression(expressionL, needFormat(expressionL, false))).append(' ').
-                append(getSign()).append(' ').
-                append(formatExpression(expressionR, needFormat(expressionR, true))).toString();
+
+        return String.format("%s %s %s",
+                formatExpression(expressionL, needFormat(expressionL, false)),
+                getSign(),
+                formatExpression(expressionR, needFormat(expressionR, true)));
     }
 
-    private static StringBuilder formatExpression(MyExpression expression, boolean needBrackets) {
-        String minString = expression.toMiniString();
-        StringBuilder sb = new StringBuilder();
+    private static String formatExpression(MyExpression expression, boolean needBrackets) {
         if (needBrackets) {
-            return sb.append('(').append(minString).append(')');
+            return String.format("(%s)", expression.toMiniString());
         }
-        return new StringBuilder(minString);
+        return expression.toMiniString();
     }
 
     private boolean needFormat(MyExpression expression, boolean isRight) {
-        int dif = getPriority().compareTo(expression.getPriority());
-        return dif < 0 || isRight && dif == 0 && !canOpen(expression);
+        return getPriority() > expression.getPriority()
+                || isRight && getPriority() == expression.getPriority() && !canOpen(expression);
     }
 
     protected abstract boolean canOpen(MyExpression expression);

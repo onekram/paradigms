@@ -22,8 +22,8 @@ public class Multiply extends BinaryOperation {
         return "*";
     }
     @Override
-    public Priority getPriority() {
-        return Priority.HIGH;
+    public int getPriority() {
+        return 20;
     }
     @Override
     protected boolean canOpen(MyExpression expression) {

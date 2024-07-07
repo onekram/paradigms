@@ -21,8 +21,8 @@ public class Add extends BinaryOperation {
         return "+";
     }
     @Override
-    public Priority getPriority() {
-        return Priority.COMMON;
+    public int getPriority() {
+        return 10;
     }
     protected boolean canOpen(MyExpression expression) {
         return true;

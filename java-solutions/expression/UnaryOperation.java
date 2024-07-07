@@ -6,11 +6,15 @@ import java.util.List;
 
 public abstract class UnaryOperation implements MyExpression {
     private final MyExpression expression;
+
     public UnaryOperation(MyExpression expression) {
         this.expression = expression;
     }
+
     protected abstract int evaluateImpl(int value);
+
     abstract BigInteger evaluateImpl(BigInteger value);
+
     @Override
     public int evaluate(int value) {
         return evaluateImpl(expression.evaluate(value));
@@ -58,18 +62,15 @@ public abstract class UnaryOperation implements MyExpression {
 
     @Override
     public String toMiniString() {
-        StringBuilder sb = new StringBuilder();
         if (expression instanceof BinaryOperation) {
-            sb.append(getSign()).append('(').append(expression.toMiniString()).append(')');
-            return sb.toString();
+            return String.format("%s(%s)", getSign(), expression.toMiniString());
         }
-        sb.append(getSign()).append(' ').append(expression.toMiniString());
-        return sb.toString();
+        return String.format("%s %s", getSign(), expression.toMiniString());
     }
 
     @Override
-    public Priority getPriority() {
-        return Priority.NP;
+    public int getPriority() {
+        return 100;
     }
 
 }

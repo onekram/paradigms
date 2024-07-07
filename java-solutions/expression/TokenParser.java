@@ -3,162 +3,216 @@ package expression;
 import java.util.*;
 import java.util.function.Predicate;
 
-public class TokenParser {
-    private int pos;
-    private int lastPos;
-    private Operand currentElement;
-    private final String expression;
-    private final HashSet<Character> simpleOperations = new HashSet<>(
-            Set.of('+', '*', '/', '&', '^', '|', '(', ')', '[', ']', '{', '}'));
-    private final HashSet<Character> openBrackets = new HashSet<>(Set.of('(', '[', '{'));
-    private final HashSet<String> variables;
-    private final HashMap<String, Integer> dictVariables;
-    private final HashMap<Operation, Operation> brackets = new HashMap<>(Map.of(
-            Operation.LEFT_BRACE, Operation.RIGHT_BRACE,
-            Operation.LEFT_BRACKET, Operation.RIGHT_BRACKET,
-            Operation.LEFT_PARENTHESES, Operation.RIGHT_PARENTHESES));
 
+public class TokenParser {
+
+    private int pos;
+    private int oldPos;
+    private String token;
+    private boolean newToken = false;
+    private final String expression;
+    private final HashSet<Character> openBrackets = new HashSet<>(Set.of('(', '[', '{'));
+
+    private final HashSet<String> variables;
+    private final HashMap<String, Integer> dictVariables = new HashMap<>();
     private final Predicate<Integer> lettersToken;
     private final Predicate<Integer> digitsToken;
-
+    private final Predicate<Integer> simpleToken;
+    
     public TokenParser(String expression, List<String> variables) {
+        this.expression = expression;
         this.variables = new HashSet<>(variables);
-        this.dictVariables = new HashMap<>();
         for (int i = 0; i < variables.size(); i++) {
             this.dictVariables.put(variables.get(i), i);
         }
-        this.expression = expression;
-        lettersToken = i -> (i < expression.length()) && (Character.isLetter(expression.charAt(i)));
-        digitsToken = i -> (i < expression.length()) && (Character.isDigit(expression.charAt(i)));
-        this.currentElement = new Operand(Operation.INIT);
+        lettersToken = i -> i < expression.length() && Character.isLetter(getChar(i));
+        digitsToken = i -> i < expression.length() && Character.isDigit(getChar(i));
+        simpleToken = i -> i < expression.length() &&
+                !Character.isWhitespace(getChar(i)) &&
+                !openBrackets.contains(getChar(i)) &&
+                !Character.isDigit(getChar(i)) &&
+                !Character.isLetter(getChar(i));
     }
-    public String getExpression() {
-        return expression;
-    }
-    public int getVariablesIndex(String varName) {
-        return dictVariables.get(varName);
-    }
+
     public boolean isEnd() {
-        return currentElement.getType() == Operation.END;
+        return pos >= expression.length();
     }
 
-    public void nextStep() {
-        skipSpace();
-        lastPos = pos;
-        if (pos >= expression.length()) {
-            currentElement = new Operand(Operation.END);
-            return;
+    private char getChar(int i) {
+        if (i >= expression.length()) {
+            return '\0';
         }
-        char value = expression.charAt(pos);
-        if (!parseSimple() && !parseVar() && !parseConst()) {
-            if (value == '-') {
-                pos++;
-                if (isBinaryMinus()) {
-                    currentElement = new Operand("-");
-                } else {
-                    currentElement = Operand.getUnaryMinus();
-                }
-            } else {
-                 currentElement = new Operand(parseToken());
-            }
-        }
-    }
-    public boolean isOpenBracket(Operation type) {
-        return List.of(Operation.LEFT_BRACE, Operation.LEFT_BRACKET, Operation.LEFT_PARENTHESES).contains(type);
+        return expression.charAt(i);
     }
 
-    public boolean isCloseBracket(Operation type) {
-        return List.of(Operation.RIGHT_BRACE, Operation.RIGHT_BRACKET, Operation.RIGHT_PARENTHESES).contains(type);
-    }
-    public boolean isPairedBracket(Operation open, Operation close) {
-        return brackets.get(open).equals(close);
-    }
-
-    private boolean parseVar() {
+    public boolean parseVar() {
         StringBuilder sb = new StringBuilder();
         int currentPos = pos;
-        if (expression.charAt(currentPos) == '$') {
+
+        if (test('$')) {
             do {
-                sb.append(expression.charAt(currentPos));
-                currentPos++;
+                sb.append(getChar(currentPos++));
             } while (digitsToken.test(currentPos));
         } else {
             while (lettersToken.test(currentPos)) {
-                sb.append(expression.charAt(currentPos));
-                currentPos++;
+                sb.append(getChar(currentPos++));
             }
         }
         if (variables.contains(sb.toString())) {
-            currentElement = new Operand(Operation.VAR, sb.toString());
-            pos = currentPos;
+            setCurrentToken(sb.toString(), currentPos);
             return true;
         }
         return false;
     }
-    private boolean parseConst() {
+
+    public int getVarIndex(String token) {
+        return dictVariables.get(token);
+    }
+
+    public boolean parseConst() {
         StringBuilder sb = new StringBuilder();
         int currentPos = pos;
-        if (expression.charAt(currentPos) == '-') {
-            if (isBinaryMinus() || !checkNext()) {
+        Predicate<Integer> condition = digitsToken.or((i -> getChar(i) == '.'));
+        if (test('-')) {
+            if (!checkNext()) {
                 return false;
             }
             do {
-                sb.append(expression.charAt(currentPos));
-                currentPos++;
-            } while (digitsToken.test(currentPos));
+                sb.append(getChar(currentPos++));
+            } while (condition.test(currentPos));
         } else {
-            while (digitsToken.test(currentPos)) {
-                sb.append(expression.charAt(currentPos));
-                currentPos++;
+            while (condition.test(currentPos)) {
+                sb.append(getChar(currentPos++));
             }
         }
         if (!sb.isEmpty()) {
-            currentElement = Operand.getConst(sb.toString());
-            pos = currentPos;
+            setCurrentToken(sb.toString(), currentPos);
             return true;
         }
         return false;
     }
-    private boolean parseSimple() {
-        char value = expression.charAt(pos);
-        if (simpleOperations.contains(value)){
-            pos++;
-            currentElement = new Operand(String.valueOf(value));
-            return true;
-        }
-        return false;
-    }
-    private void skipSpace() {
-        while (pos < expression.length() && Character.isWhitespace(expression.charAt(pos))) {
+
+    public void skipSpace() {
+        while (pos < expression.length() && test(Character::isWhitespace)) {
             pos++;
         }
     }
+
     public boolean hasNext() {
         return pos < expression.length();
     }
-    private String parseToken() {
-        StringBuilder sb = new StringBuilder();
-        while (pos < expression.length() &&
-                !Character.isWhitespace(expression.charAt(pos)) &&
-                !openBrackets.contains(expression.charAt(pos)) &&
-                expression.charAt(pos) != '-') {
-            sb.append(expression.charAt(pos));
-            pos++;
+
+    public void step() {
+        pos++;
+    }
+
+    public <S> boolean parseToken(Map<String, S> operations) {
+        if (newToken) {
+            newToken = false;
+            pos = oldPos;
+            return true;
         }
+        skipSpace();
+        StringBuilder sb = new StringBuilder();
+        int currentPos = pos;
+        Predicate<Integer> condition;
+        boolean flag = test(Character::isLetter, currentPos); // Parsing not a simple operation
+        if (flag) {
+            condition = lettersToken.or(digitsToken);
+        } else {
+            condition = simpleToken;
+        }
+        boolean parsed = false;
+        while (condition.test(currentPos)) {
+            sb.append(getChar(currentPos++));
+            if (!flag && operations.containsKey(sb.toString())) {
+                setCurrentToken(sb.toString(), currentPos);
+                parsed = true;
+            }
+        }
+        if (!flag) {
+            return parsed;
+        }
+
+        if (operations.containsKey(sb.toString())) {
+            setCurrentToken(sb.toString(), currentPos);
+            return true;
+        }
+        return false;
+    }
+
+    private void setCurrentToken(String token, int pos) {
+        this.token = token;
+        this.pos = pos;
+    }
+
+    public String parseToken() {
+        skipSpace();
+        StringBuilder sb = new StringBuilder();
+        int currentPos = pos;
+        Predicate<Integer> condition;
+        if (test(Character::isLetter, currentPos)) {
+            condition = lettersToken.or(digitsToken);
+        } else {
+            condition = simpleToken;
+        }
+        do {
+            sb.append(getChar(currentPos++));
+        } while (condition.test(currentPos));
         return sb.toString();
     }
-    private boolean isBinaryMinus() {
-        return currentElement.getType() == Operation.CONST ||
-                isCloseBracket(currentElement.getType()) ||
-                currentElement.getType() == Operation.VAR;
+
+    public boolean test(Predicate<Character> condition, int currentPos) {
+        return condition.test(getChar(currentPos));
     }
-    public Operand getCurrentElement() {
-        return currentElement;
+
+    public boolean test(Predicate<Character> condition) {
+        return condition.test(getChar(pos));
     }
+
+    public boolean test(char c) {
+        return getChar(pos) == c;
+    }
+
+    public boolean testOpenBracket() {
+        return test('(') || test('[') || test('{');
+    }
+
+    public boolean tesCloseBracket() {
+        return test(')') || test(']') || test('}');
+    }
+
+    public char getPaired(char l) {
+        return switch (l) {
+            case '(' -> ')';
+            case '[' ->  ']';
+            case '{' -> '}';
+            default -> throw new IllegalStateException("Unexpected value: " + l);
+        };
+    }
+
+    public char getCur() {
+        return getChar(pos);
+    }
+
+    public void setPos(int pos) {
+        this.pos = pos;
+    }
+
+    public void setNewToken() {
+        this.newToken = true;
+        oldPos = pos;
+    }
+
+    public int getPos() {
+        return pos;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
     private boolean checkNext() {
         return digitsToken.test(pos + 1);
-    }
-    public int getPos() {
-        return lastPos;
     }
 }

@@ -28,10 +28,7 @@ public class LShift extends BinaryOperation {
     }
 
     @Override
-    public Priority getPriority() {
-        return
-
-
-                Priority.LOW;
+    public int getPriority() {
+        return 1;
     }
 }

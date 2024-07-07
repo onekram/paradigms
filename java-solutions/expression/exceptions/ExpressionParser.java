@@ -2,44 +2,34 @@ package expression.exceptions;
 
 import expression.*;
 
+import java.util.Map;
+
 public class ExpressionParser extends expression.parser.ExpressionParser {
-    @Override
-    protected MyExpression action(MyExpression first, MyExpression second, Operand operand) {
-        return switch (operand.getType()) {
-            case MINUS -> new CheckedSubtract(first, second);
-            case PLUS -> new CheckedAdd(first, second);
-            case MUL -> new CheckedMultiply(first, second);
-            case DIV -> new CheckedDivide(first, second);
-            case OR -> new Or(first, second);
-            case AND -> new And(first, second);
-            case XOR -> new Xor(first, second);
-            case MIN -> new Min(first, second);
-            case MAX -> new Max(first, second);
-            case L_SHIFT -> new LShift(first, second);
-            case R_SHIFT -> new RShift(first, second);
-            case A_SHIFT -> new AShift(first, second);
-            default -> throw new AssertionError(String.format("No action expected for %s", operand));
-        };
+
+    public ExpressionParser() {
+        super(
+                Map.of(
+                        "+", new BiOp(CheckedAdd::new, 10),
+                        "-", new BiOp(CheckedSubtract::new, 10),
+                        "*", new BiOp(CheckedMultiply::new, 20),
+                        "/", new BiOp(CheckedDivide::new, 20),
+                        "min", new BiOp(Min::new, 5),
+                        "max", new BiOp(Max::new, 5),
+                        "<<", new BiOp(LShift::new, 1),
+                        ">>", new BiOp(RShift::new, 1),
+                        ">>>", new BiOp(AShift::new, 1)
+                ),
+                Map.of(
+                        "-", new UnOp(CheckedNegate::new)
+                )
+        );
     }
 
-    @Override
-    protected MyExpression parseStep(Operand next) throws ParsingException {
-        return switch (next.getType()) {
-            case UNARY_MINUS -> new CheckedNegate(factor());
-            case CONST -> new Const(parseInt(next.getName()));
-            case UNARY_L1 -> new HighOnes(factor());
-            case UNARY_T1 -> new LowOnes(factor());
-            case VAR -> new Variable(next.getName(), runner.getVariablesIndex(next.getName()));
-            default -> throw new UnexpectedTokenException(String.format("Unexpected token '%s'", next),
-                    runner.getPos());
-        };
-    }
-
-    private int parseInt(String value) throws ParsingException {
+    protected int parseInt(String value) throws ParsingException {
         try {
             return Integer.parseInt(value);
         } catch (NumberFormatException ex) {
-            throw new ConstOverflowException(String.format(value), runner.getPos(), ex);
+            throw new ConstOverflowException(String.format(value), tokenParser.getPos(), ex);
         }
     }
 }
