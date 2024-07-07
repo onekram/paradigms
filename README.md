@@ -21,3 +21,4 @@
 ## Задачи на [Prolog](prolog-solutions)
 - [Primes](prolog-solutions/primes.pl)
 - [AVL Binary Tree](prolog-solutions/tree-map.pl)
+- [Expression Parser](prolog-solutions/expression.pl)
